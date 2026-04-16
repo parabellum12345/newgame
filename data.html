@@ -4885,6 +4885,43 @@
     requestAnimationFrame(waveTick);
   }
   requestAnimationFrame(waveTick);
+  (function iframeReportHeightToParent() {
+    if (window.self === window.top) return;
+    var last = 0;
+    var tid = null;
+    function measureAndPost() {
+      var el = document.documentElement;
+      var b = document.body;
+      var h = Math.ceil(Math.max(el.scrollHeight, el.offsetHeight, b ? b.scrollHeight : 0, b ? b.offsetHeight : 0));
+      var root = document.getElementById('buraktiv-configurator');
+      if (root) {
+        var br = root.getBoundingClientRect();
+        h = Math.ceil(Math.max(h, br.bottom + window.pageYOffset));
+      }
+      h = Math.max(320, h);
+      if (Math.abs(h - last) < 4) return;
+      last = h;
+      try {
+        window.parent.postMessage({ source: 'buraktiv-smeta', height: h }, '*');
+      } catch (err) {}
+    }
+    function schedule() {
+      if (tid) clearTimeout(tid);
+      tid = setTimeout(function() {
+        tid = null;
+        measureAndPost();
+      }, 100);
+    }
+    window.addEventListener('load', schedule);
+    window.addEventListener('resize', schedule);
+    var root = document.getElementById('buraktiv-configurator');
+    if (root && typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(schedule).observe(root);
+    }
+    schedule();
+    setTimeout(schedule, 350);
+    setTimeout(schedule, 1000);
+  })();
 })();
   </script>
 </body>
