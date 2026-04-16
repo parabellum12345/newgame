@@ -1186,7 +1186,7 @@
     }
     .buraktiv-configurator .materials-table {
       width: 100%;
-      min-width: 720px;
+      min-width: 520px;
       border-collapse: collapse;
       font-size: 0.72rem;
       line-height: 1.35;
@@ -1289,11 +1289,9 @@
       margin-top: 0.2rem;
       width: 100%;
     }
-    .buraktiv-configurator .materials-table .col-equip-c,
     .buraktiv-configurator .materials-table .col-qty,
-    .buraktiv-configurator .materials-table .col-work,
-    .buraktiv-configurator .materials-table .col-equip-f,
-    .buraktiv-configurator .materials-table .col-sum { width: 90px; text-align: right; }
+    .buraktiv-configurator .materials-table .col-price,
+    .buraktiv-configurator .materials-table .col-sum { width: 96px; text-align: right; }
     .buraktiv-configurator .materials-table td.col-name { font-weight: 500; color: var(--text); }
     .buraktiv-configurator .materials-table td.col-unit { color: var(--text-muted); font-size: 0.68rem; }
     .buraktiv-configurator .materials-table .row-category td {
@@ -2170,10 +2168,8 @@
               <tr>
                 <th class="col-name">Перечень работ и материалов</th>
                 <th class="col-unit">Ед. изм.</th>
-                <th class="col-equip-c">Материалы</th>
                 <th class="col-qty">Кол-во</th>
-                <th class="col-work">Работа</th>
-                <th class="col-equip-f">Работа + материалы</th>
+                <th class="col-price">Цена</th>
                 <th class="col-sum">Сумма</th>
               </tr>
             </thead>
@@ -2458,6 +2454,34 @@
       else sum = asNum(base.sum);
     }
     return { equipC: equipC, qty: qty, work: work, equipF: equipF, sum: sum };
+  }
+  var MATERIALS_TABLE_COLS = 5;
+  /** Текст колонки «Цена» (объединяет бывшие «Материалы» и «Работа»). */
+  function materialsPriceCellText(r, rowId) {
+    if (!r) return '—';
+    if (rowId === 'drilling_sand') return '—';
+    if (rowId === 'drilling_artesian' && r.work != null) return Number(r.work).toLocaleString('ru-RU');
+    if (r.equipC != null) return Number(r.equipC).toLocaleString('ru-RU');
+    if (r.work != null && Number(r.work) !== 0) return Number(r.work).toLocaleString('ru-RU');
+    if (r.qty != null && Number(r.qty) === 1 && r.sum != null) return Number(r.sum).toLocaleString('ru-RU');
+    if (r.equipF != null && (r.qty == null || Number(r.qty) === 0)) return Number(r.equipF).toLocaleString('ru-RU');
+    if (r.qty != null && Number(r.qty) > 0 && r.sum != null) {
+      var u = Math.round(Number(r.sum) / Number(r.qty));
+      return isNaN(u) ? '—' : u.toLocaleString('ru-RU');
+    }
+    return '—';
+  }
+  /** Поле manualOverrides для редактирования «Цена» (пусто — только сумма/кол-во). */
+  function materialsPriceCellBindField(rowId, r) {
+    if (!r) return '';
+    if (rowId === 'drilling_sand') return '';
+    if (rowId === 'drilling_artesian') return 'work';
+    if (r.equipC != null) return 'equipC';
+    if (r.work != null && Number(r.work) !== 0) return 'work';
+    if (r.qty != null && Number(r.qty) === 1 && r.sum != null) return '';
+    if (r.equipF != null && (r.qty == null || Number(r.qty) === 0)) return 'equipF';
+    if (r.qty != null && Number(r.qty) > 0 && r.sum != null) return 'equipF';
+    return '';
   }
   /* Летний: чёткие строки сметы; ориентир SUMMER_ORIENT_ARRANGEMENT_TOTAL подбивается за счёт оголовка и расходников после насоса, метража до min(заявка,30 м) по ставкам и доставки. */
   var SUMMER_PUMP_OPTIONS = {
@@ -3437,16 +3461,15 @@
       }
       if (isTotal) tr.className = 'row-total';
       if (rowId) tr.setAttribute('data-rowid', rowId);
+      var r = null;
       if (isCategory) {
-        tr.innerHTML = '<td colspan="7" class="col-name cat-name">' + name + '</td>';
+        tr.innerHTML = '<td colspan="' + MATERIALS_TABLE_COLS + '" class="col-name cat-name">' + name + '</td>';
       } else if (isTotal) {
         tr.innerHTML =
           '<td class="col-name total-label">' + name + '</td>' +
           '<td class="col-unit"></td>' +
-          '<td class="col-equip-c"></td>' +
           '<td class="col-qty"></td>' +
-          '<td class="col-work"></td>' +
-          '<td class="col-equip-f"></td>' +
+          '<td class="col-price"></td>' +
           '<td class="col-sum total-sum">' + (sum0 !== undefined && sum0 !== '' ? fmt(sum0) : '') + '</td>';
       } else {
         var namePart = nameIsHtml ? name : name.replace(/</g, '&lt;');
@@ -3457,28 +3480,21 @@
           equipF: numOrNull(equipF0),
           sum: numOrNull(sum0)
         };
-        var r = _computeExcelRow(rowId, base, !!fixedIfNoOverrides);
-        var equipC = r.equipC;
+        r = _computeExcelRow(rowId, base, !!fixedIfNoOverrides);
         var qty = r.qty;
-        var work = r.work;
-        var equipF = r.equipF;
         var sumShown = r.sum;
+        var priceText = materialsPriceCellText(r, rowId);
         tr.innerHTML =
           '<td class="col-name">' + namePart + '</td>' +
           '<td class="col-unit">' + unit + '</td>' +
-          '<td class="col-equip-c">' + (equipC != null ? fmt(equipC) : '—') + '</td>' +
           '<td class="col-qty">' + (qty != null ? fmt(qty) : '') + '</td>' +
-          '<td class="col-work">' + (work == null ? '' : (work === 0 ? '—' : fmt(work))) + '</td>' +
-          '<td class="col-equip-f">' + (equipF != null ? fmt(equipF) : '') + '</td>' +
+          '<td class="col-price">' + priceText + '</td>' +
           '<td class="col-sum">' + (sumShown != null ? fmt(sumShown) : '') + '</td>';
       }
       tbody.appendChild(tr);
-      if (!isCategory && !isTotal && rowId) {
-        ['equipC', 'qty', 'work', 'equipF', 'sum'].forEach(function(field) {
-          var cls = field === 'equipC' ? '.col-equip-c' :
-            (field === 'qty' ? '.col-qty' :
-            (field === 'work' ? '.col-work' :
-            (field === 'equipF' ? '.col-equip-f' : '.col-sum')));
+      if (!isCategory && !isTotal && rowId && r) {
+        ['qty', 'sum'].forEach(function(field) {
+          var cls = field === 'qty' ? '.col-qty' : '.col-sum';
           var td = tr.querySelector(cls);
           if (!td) return;
           td.setAttribute('data-field', field);
@@ -3493,6 +3509,20 @@
             td.classList.remove('editable-cell');
           }
         });
+        var bindPrice = materialsPriceCellBindField(rowId, r);
+        if (bindPrice) {
+          var tdP = tr.querySelector('.col-price');
+          if (tdP) {
+            tdP.setAttribute('data-field', bindPrice);
+            tdP.setAttribute('data-rowid', rowId);
+            if (_manualGetCell(rowId, bindPrice) != null) tdP.classList.add('is-overridden');
+            if (isEditableField(bindPrice, rowId)) {
+              tdP.classList.add('editable-cell');
+              tdP.setAttribute('contenteditable', 'true');
+              tdP.setAttribute('spellcheck', 'false');
+            }
+          }
+        }
       }
     }
     function subtotalRow(label, sumVal) {
@@ -3501,10 +3531,8 @@
       tr.innerHTML =
         '<td class="col-name total-label">' + String(label).replace(/</g, '&lt;') + '</td>' +
         '<td class="col-unit"></td>' +
-        '<td class="col-equip-c"></td>' +
         '<td class="col-qty"></td>' +
-        '<td class="col-work"></td>' +
-        '<td class="col-equip-f"></td>' +
+        '<td class="col-price"></td>' +
         '<td class="col-sum total-sum">' + fmt(sumVal) + '</td>';
       tbody.appendChild(tr);
     }
@@ -3571,7 +3599,7 @@
       var tr = document.createElement('tr');
       tr.className = 'row-drill-appendix-bundle';
       tr.innerHTML =
-        '<td colspan="7" class="drill-appendix-cell">' +
+        '<td colspan="' + MATERIALS_TABLE_COLS + '" class="drill-appendix-cell">' +
         '<div class="drill-appendix-bundle">' +
         parts.join('') +
         '</div>' +
@@ -3588,7 +3616,7 @@
       var tr = document.createElement('tr');
       tr.className = 'row-stage-1-banner';
       tr.innerHTML =
-        '<td colspan="7" class="stage-1-cell">' +
+        '<td colspan="' + MATERIALS_TABLE_COLS + '" class="stage-1-cell">' +
         '<div class="stage-1-banner">' +
         '<div class="stage-1-kicker">ЭТАП 1 <span>·</span> БУРЕНИЕ СКВАЖИНЫ</div>' +
         '<div class="stage-1-title">' +
@@ -3815,7 +3843,7 @@
     var drillingPrice = getDrillingOnlyPrice();
     var pricePerM = getPricePerMeter();
     function fmt(n) { return n != null && n !== '' ? Number(n).toLocaleString('ru-RU') : ''; }
-    var headers = ['Перечень работ и материалов', 'Ед. изм.', 'Материалы', 'Кол-во', 'Работа', 'Работа + материалы', 'Сумма'];
+    var headers = ['Перечень работ и материалов', 'Ед. изм.', 'Кол-во', 'Цена', 'Сумма'];
     var rows = [];
     var totalAll = 0;
     function fmtMoneyOrDash(v) { return (v == null || v === '') ? '—' : fmt(v); }
@@ -3834,16 +3862,14 @@
       rows.push([
         name,
         unit || '',
-        fmtMoneyOrDash(r ? r.equipC : ''),
         fmtQty(r ? r.qty : ''),
-        (workDashWhenZero === false ? fmt(r ? r.work : '') : fmtWorkCell(r ? r.work : '')),
-        fmt(r ? r.equipF : ''),
+        materialsPriceCellText(r, rowId),
         fmt(r ? r.sum : '')
       ]);
     }
     if (state.wellType) {
-      rows.push(['__PDF_BLOCK_SEP__', 'ЭТАП_1', '', '', '', '', '']);
-      rows.push(['БУРЕНИЕ', '', '', '', '', '', '']);
+      rows.push(['__PDF_BLOCK_SEP__', 'ЭТАП_1', '', '', '']);
+      rows.push(['БУРЕНИЕ', '', '', '', '']);
       if (state.wellType === 'artesian') {
         pushExcelRow(
           'drilling_artesian',
@@ -3874,9 +3900,9 @@
         );
       }
       if (state.casingType === 'npvh') {
-        rows.push(['__PDF_DRILL_APPENDIX_NPVH__', '', '', '', '', '', '']);
+        rows.push(['__PDF_DRILL_APPENDIX_NPVH__', '', '', '', '']);
       } else if (state.casingType === 'metal_plastic') {
-        rows.push(['__PDF_DRILL_APPENDIX_METAL_PLASTIC__', '', '', '', '', '', '']);
+        rows.push(['__PDF_DRILL_APPENDIX_METAL_PLASTIC__', '', '', '', '']);
       }
     }
     if (state.wellType && state.arrangement) {
@@ -3890,7 +3916,7 @@
               : state.arrangement === 'plastic_caisson'
                 ? 'КЕССОН ПЛАСТИК'
                 : 'ОБУСТРОЙСТВО';
-      rows.push(['__PDF_BLOCK_SEP__', sepKey, '', '', '', '', '']);
+      rows.push(['__PDF_BLOCK_SEP__', sepKey, '', '', '']);
     }
     if (state.arrangement === 'summer') {
       var pPdf = getSummerPumpCurrent();
@@ -3920,14 +3946,12 @@
         rows.push([
           displayName,
           unit || '',
-          fmtMoneyOrDash(r ? r.equipC : ''),
           fmtQty(r ? r.qty : ''),
-          (workDashWhenZero === false ? fmt(r ? r.work : '') : fmtWorkCell(r ? r.work : '')),
-          fmt(r ? r.equipF : ''),
+          materialsPriceCellText(r, rowId),
           fmt(r ? r.sum : '')
         ]);
       }
-      rows.push(['ОБОРУДОВАНИЕ', '', '', '', '', '', '']);
+      rows.push(['ОБОРУДОВАНИЕ', '', '', '', '']);
       pushSummerRow('summer_pump', 'Скважинный насос (выбрано: ' + pPdf.label + ')', 'шт.', { equipC: pPdf.price, qty: 1, work: 0, equipF: pPdf.price, sum: pPdf.price }, false, true, 'e');
       pushSummerRow('summer_backflow_1inch', 'Обратный клапан 1"', 'шт.', { equipC: backPdf, qty: 1, work: 0, equipF: backPdf, sum: backPdf }, false, true, 'e');
       pushSummerRow('summer_rope_m', 'Трос нержавеющий 3 мм', 'м', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclPdf, work: 0, equipF: ropePdf, sum: ropePdf }, false, true, 'e');
@@ -3941,16 +3965,16 @@
         pushSummerRow('summer_extra_rope', 'Трос св. ' + SUMMER_INCLUDED_LOAD_M + ' м', 'м', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: exPdf, work: 0, equipF: exPdfR, sum: exPdfR }, false, true, 'e');
         pushSummerRow('summer_extra_pipe', 'ПНД32 св. ' + SUMMER_INCLUDED_LOAD_M + ' м', 'м', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: exPdf, work: 0, equipF: exPdfP, sum: exPdfP }, false, true, 'e');
       }
-      rows.push(['Итого оборудование', '', '', '', '', '', fmt(sumEqPdf)]);
-      rows.push(['МОНТАЖ', '', '', '', '', '', '']);
+      rows.push(['Итого оборудование', '', '', '', fmt(sumEqPdf)]);
+      rows.push(['МОНТАЖ', '', '', '', '']);
       pushSummerRow('summer_mount', 'Монтаж насоса', 'м.п.', { equipC: null, qty: inclPdf, work: SUMMER_MOUNT_PRICE_PER_M, equipF: mountPdf, sum: mountPdf }, false, true, 'm');
       pushSummerRow('summer_transport', 'Транспортные расходы', 'услуга', { equipC: null, qty: 1, work: SUMMER_TRANSPORT_FIXED, equipF: SUMMER_TRANSPORT_FIXED, sum: SUMMER_TRANSPORT_FIXED }, true, true, 'm');
       pushSummerRow('summer_irrigation_mount', 'Монтаж системы летнего полива', 'компл.', { equipC: irrPdf, qty: 1, work: 0, equipF: irrPdf, sum: irrPdf }, true, true, 'm');
       if (exPdf > 0) {
         pushSummerRow('summer_extra_mount', 'Монтаж св. ' + SUMMER_INCLUDED_LOAD_M + ' м', 'м.п.', { equipC: null, qty: exPdf, work: SUMMER_MOUNT_PRICE_PER_M, equipF: exPdfM, sum: exPdfM }, false, true, 'm');
       }
-      rows.push(['Итого монтаж', '', '', '', '', '', fmt(sumMoPdf)]);
-      rows.push(['Итого лето: оборудование + монтаж', '', '', '', '', '', fmt(sumEqPdf + sumMoPdf)]);
+      rows.push(['Итого монтаж', '', '', '', fmt(sumMoPdf)]);
+      rows.push(['Итого лето: оборудование + монтаж', '', '', '', fmt(sumEqPdf + sumMoPdf)]);
     } else if (state.arrangement === 'adapter') {
       var inclAPdf = getAdapterIncludedMeterQty();
       var ropeAPdf = getAdapterRopeSum();
@@ -3970,14 +3994,12 @@
         rows.push([
           displayName,
           unit || '',
-          fmtMoneyOrDash(r ? r.equipC : ''),
           fmtQty(r ? r.qty : ''),
-          (workDashWhenZero === false ? fmt(r ? r.work : '') : fmtWorkCell(r ? r.work : '')),
-          fmt(r ? r.equipF : ''),
+          materialsPriceCellText(r, rowId),
           fmt(r ? r.sum : '')
         ]);
       }
-      rows.push(['ОБОРУДОВАНИЕ', '', '', '', '', '', '']);
+      rows.push(['ОБОРУДОВАНИЕ', '', '', '', '']);
       pushAdapterRow('adapter_pump', 'Скважинный насос погружной [шт.]', 'шт.', { equipC: ADAPTER_PUMP_PRICE, qty: 1, work: 0, equipF: ADAPTER_PUMP_PRICE, sum: ADAPTER_PUMP_PRICE }, false, true, 'e');
       pushAdapterRow('adapter_tank', 'Мембранный бак 100 л [шт.]', 'шт.', { equipC: ADAPTER_TANK_PRICE, qty: 1, work: 0, equipF: ADAPTER_TANK_PRICE, sum: ADAPTER_TANK_PRICE }, false, true, 'e');
       pushAdapterRow('adapter_flex_hose', 'Гибкая подводка гидробака [шт.]', 'шт.', { equipC: ADAPTER_FLEX_HOSE, qty: 1, work: 0, equipF: ADAPTER_FLEX_HOSE, sum: ADAPTER_FLEX_HOSE }, false, true, 'e');
@@ -3994,16 +4016,16 @@
       pushAdapterRow('adapter_heat_cable_kit', 'Термогреющий кабель саморегулирующийся 16 Вт/м (Корея), 3 м — комплект [компл.]', 'компл.', { equipC: ADAPTER_HEAT_CABLE_KIT, qty: 1, work: 0, equipF: ADAPTER_HEAT_CABLE_KIT, sum: ADAPTER_HEAT_CABLE_KIT }, false, true, 'e');
       pushAdapterRow('adapter_insulation', 'Утеплитель для труб 2 м [шт.]', 'шт.', { equipC: ADAPTER_INSULATION, qty: 1, work: 0, equipF: ADAPTER_INSULATION, sum: ADAPTER_INSULATION }, false, true, 'e');
       pushAdapterRow('adapter_thermal_plug', 'Электровилка термокабеля [шт.]', 'шт.', { equipC: ADAPTER_THERMAL_PLUG, qty: 1, work: 0, equipF: ADAPTER_THERMAL_PLUG, sum: ADAPTER_THERMAL_PLUG }, false, true, 'e');
-      rows.push(['Итого оборудование', '', '', '', '', '', fmt(sumEqAPdf)]);
-      rows.push(['МОНТАЖ', '', '', '', '', '', '']);
+      rows.push(['Итого оборудование', '', '', '', fmt(sumEqAPdf)]);
+      rows.push(['МОНТАЖ', '', '', '', '']);
       pushAdapterRow('adapter_transport', 'Транспортные расходы', 'услуга', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true, true, 'm');
       pushAdapterRow('adapter_trench', 'Траншея (с материалом)', 'м.п.', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false, true, 'm');
       pushAdapterRow('adapter_mount_adapter', 'Монтаж адаптера [шт.]', 'шт.', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false, true, 'm');
       pushAdapterRow('adapter_mount_pump', 'Монтаж насоса [м]', 'м.п.', { equipC: null, qty: inclAPdf, work: SUMMER_MOUNT_PRICE_PER_M, equipF: mountAPdf, sum: mountAPdf }, false, true, 'm');
       pushAdapterRow('adapter_pnr', 'Распайка и пусконаладочные работы [шт.]', 'шт.', { equipC: null, qty: 1, work: ADAPTER_PNR_WORK, equipF: ADAPTER_PNR_WORK, sum: ADAPTER_PNR_WORK }, false, true, 'm');
       pushAdapterRow('adapter_underfound', 'Прокол / подкоп под фундаментом (ввод в дом) [компл.]', 'компл.', { equipC: null, qty: 1, work: ADAPTER_UNDERFOUND_WORK, equipF: ADAPTER_UNDERFOUND_WORK, sum: ADAPTER_UNDERFOUND_WORK }, false, true, 'm');
-      rows.push(['Итого работы по монтажу', '', '', '', '', '', fmt(sumMoAPdf)]);
-      rows.push(['Всего за обустройство водоснабжения (адаптер)', '', '', '', '', '', fmt(sumEqAPdf + sumMoAPdf)]);
+      rows.push(['Итого работы по монтажу', '', '', '', fmt(sumMoAPdf)]);
+      rows.push(['Всего за обустройство водоснабжения (адаптер)', '', '', '', fmt(sumEqAPdf + sumMoAPdf)]);
     } else if (state.arrangement === 'metal_caisson') {
       pushExcelRow('caisson_metal', 'Обустройство: Металлический кессон', 'услуга', { equipC: null, qty: 1, work: null, equipF: null, sum: ARRANGEMENT_PRICES.metal_caisson }, true, true);
     } else if (state.arrangement === 'plastic_caisson') {
@@ -4012,7 +4034,7 @@
 
     // Дополнительные опции (дополнительно к базовому монтажу)
     if (state.extras && state.extras.length) {
-      rows.push(['ДОПОЛНИТЕЛЬНО', '', '', '', '', '', '']);
+      rows.push(['ДОПОЛНИТЕЛЬНО', '', '', '', '']);
       if (state.extras.indexOf('diamond_drilling') >= 0) {
         pushExcelRow('extra_diamond_drilling', 'Алмазное бурение отверстий', 'отв.', { equipC: null, qty: 1, work: 10000, equipF: 10000, sum: 10000 }, false, true);
       }
@@ -4023,7 +4045,7 @@
         pushExcelRow('extra_backflow_valve', 'Клапан обратного слива', 'шт.', { equipC: 5000, qty: 1, work: 0, equipF: 5000, sum: 5000 }, false, true);
       }
     }
-    rows.push(['Итого', '', '', '', '', '', fmt(totalAll)]);
+    rows.push(['Итого', '', '', '', fmt(totalAll)]);
     return { headers: headers, rows: rows };
   }
   function getClientPlaceLine() {
@@ -4112,13 +4134,11 @@
                   margin: [0, 0, 0, 0]
                 }
               ],
-              colSpan: 7,
+              colSpan: 5,
               fillColor: '#eff6ff',
               border: [false, false, false, false],
               margin: [4, 5, 4, 5]
             },
-            {},
-            {},
             {},
             {},
             {},
@@ -4176,13 +4196,11 @@
                 margin: [0, 0, 0, 0]
               }
             ],
-            colSpan: 7,
+            colSpan: 5,
             fillColor: '#f0fdfa',
             border: [false, false, false, false],
             margin: [6, 10, 6, 10]
           },
-          {},
-          {},
           {},
           {},
           {},
@@ -4213,13 +4231,11 @@
                 margin: [0, 0, 0, 0]
               }
             ],
-            colSpan: 7,
+            colSpan: 5,
             fillColor: '#eff6ff',
             border: [false, false, false, false],
             margin: [2, 2, 2, 2]
           },
-          {},
-          {},
           {},
           {},
           {},
@@ -4251,13 +4267,11 @@
                 margin: [0, 0, 0, 0]
               }
             ],
-            colSpan: 7,
+            colSpan: 5,
             fillColor: '#eff6ff',
             border: [false, false, false, false],
             margin: [2, 2, 2, 2]
           },
-          {},
-          {},
           {},
           {},
           {},
@@ -4311,10 +4325,10 @@
         }
         if (isSubtotal) {
           o.fillColor = '#f1f5f9';
-          if (j === 6) o.color = '#0f766e';
+          if (j === 4) o.color = '#0f766e';
         }
         if (isTotal) o.fillColor = '#e2e8f0';
-        if (isTotal && j === 6) o.color = '#0284c7';
+        if (isTotal && j === 4) o.color = '#0284c7';
         return o;
       });
     };
@@ -4365,7 +4379,7 @@
         table: {
           headerRows: 1,
           dontBreakRows: false,
-          widths: ['*', 46, 56, 40, 50, 68, 54],
+          widths: ['*', 52, 56, 72, 58],
           body: body
         },
         layout: 'lightHorizontalLines'
