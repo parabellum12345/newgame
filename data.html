@@ -2483,6 +2483,8 @@
   var ADAPTER_INCLUDED_M = 30;
   var ADAPTER_ORIENT_TOTAL = 100000;
   var ADAPTER_TRANSPORT_FIXED = 5000;
+  /** Траншея в смете адаптера: ставка за м.п. в колонках; по умолчанию кол-во 0 → сумма 0 до ввода метража. */
+  var ADAPTER_TRENCH_PRICE_PER_M = 2000;
   var ADAPTER_PUMP_PRICE = 22300;
   var ADAPTER_TANK_PRICE = 10500;
   var ADAPTER_FLEX_HOSE = 700;
@@ -2751,7 +2753,7 @@
       (_computeExcelRow('adapter_rope_clamps', { equipC: SUMMER_ROPE_CLAMP_PER_M, qty: inclA, work: 0, equipF: clampS, sum: clampS }, false).sum || 0) +
       (_computeExcelRow('adapter_pipe_pnd32', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: inclA, work: 0, equipF: pipeS, sum: pipeS }, false).sum || 0) +
       (_computeExcelRow('adapter_transport', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true).sum || 0) +
-      (_computeExcelRow('adapter_trench', { equipC: null, qty: 1, work: 0, equipF: 0, sum: 0 }, true).sum || 0) +
+      (_computeExcelRow('adapter_trench', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false).sum || 0) +
       (_computeExcelRow('adapter_mount_pump', { equipC: null, qty: inclA, work: SUMMER_MOUNT_PRICE_PER_M, equipF: mountP, sum: mountP }, false).sum || 0) +
       (_computeExcelRow('adapter_mount_adapter', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false).sum || 0) +
       (_computeExcelRow('adapter_pnr', { equipC: null, qty: 1, work: ADAPTER_PNR_WORK, equipF: ADAPTER_PNR_WORK, sum: ADAPTER_PNR_WORK }, false).sum || 0) +
@@ -2831,7 +2833,7 @@
         total += (_computeExcelRow('adapter_rope_clamps', { equipC: SUMMER_ROPE_CLAMP_PER_M, qty: inclAd, work: 0, equipF: clampAd, sum: clampAd }, false).sum || 0);
         total += (_computeExcelRow('adapter_pipe_pnd32', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: inclAd, work: 0, equipF: pipeAd, sum: pipeAd }, false).sum || 0);
         total += (_computeExcelRow('adapter_transport', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true).sum || 0);
-        total += (_computeExcelRow('adapter_trench', { equipC: null, qty: 1, work: 0, equipF: 0, sum: 0 }, true).sum || 0);
+        total += (_computeExcelRow('adapter_trench', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false).sum || 0);
         total += (_computeExcelRow('adapter_mount_pump', { equipC: null, qty: inclAd, work: SUMMER_MOUNT_PRICE_PER_M, equipF: mountAd, sum: mountAd }, false).sum || 0);
         total += (_computeExcelRow('adapter_mount_adapter', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false).sum || 0);
         total += (_computeExcelRow('adapter_pnr', { equipC: null, qty: 1, work: ADAPTER_PNR_WORK, equipF: ADAPTER_PNR_WORK, sum: ADAPTER_PNR_WORK }, false).sum || 0);
@@ -2990,7 +2992,7 @@
       lines.push('✔️ Расходники, термогреющий кабель (комплект 3 м), утеплитель, вилка термокабеля');
       lines.push('✔️ Транспорт; монтаж адаптера и насоса до ' + ADAPTER_INCLUDED_M + ' м по глубине сметы; распайка и ПНР');
       lines.push('✔️ Прокол / подкоп под фундаментом (ввод в дом)');
-      lines.push('✔️ Траншея в расчёте не включена (в таблице 0 ₽; ориентир отдельно от 2 000 ₽/м с материалом)');
+      lines.push('✔️ Траншея (с материалом): в смете 2 000 ₽/м в колонках материалов и «работа+материалы», по умолчанию 0 м — метраж укажите в таблице при необходимости');
     } else if (state.arrangement === 'metal_caisson') {
       arrPrice = ARRANGEMENT_PRICES.metal_caisson;
       arrTitle = '🏠 Обустройство скважины с металлическим кессоном под ключ — ' + fmt(arrPrice) + ' ₽';
@@ -3364,7 +3366,7 @@
           'detail-arrangement-tip',
           'Под ключ ' +
             ADAPTER_ORIENT_TOTAL.toLocaleString('ru-RU') +
-            ' ₽ по строкам сметы. Траншея в таблице — 0 ₽ (ориентир отдельно от 2 000 ₽/м с материалом: ПНД 32/20, кабель 3×1,5). ' +
+            ' ₽ по строкам сметы. Траншея (с материалом): 2 000 ₽/м в материалах и «работа+материалы», количество по умолчанию 0 м — внесите метраж в таблице. ' +
             'Трос, ПНД32 и монтаж насоса в комплекте — ' + ADAPTER_INCLUDED_M + ' м (фикс в смете).'
         );
       } else {
@@ -3758,20 +3760,19 @@
       addAdM((_computeExcelRow('adapter_transport', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true).sum || 0));
       row(
         'adapter_trench',
-        'Траншея (м.п., ПНД 32/20 и кабель 3×1,5 с материалом) — в смете 0 ₽; ориентир отдельно от 2 000 ₽/м',
+        'Траншея (с материалом)',
         'м.п.',
+        ADAPTER_TRENCH_PRICE_PER_M,
+        0,
+        0,
         null,
-        1,
-        0,
-        0,
-        0,
-        false,
-        false,
         null,
         false,
-        true
+        false,
+        null,
+        false
       );
-      addAdM((_computeExcelRow('adapter_trench', { equipC: null, qty: 1, work: 0, equipF: 0, sum: 0 }, true).sum || 0));
+      addAdM((_computeExcelRow('adapter_trench', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false).sum || 0));
       row('adapter_mount_adapter', 'Монтаж адаптера [шт.]', 'шт.', null, 1, ADAPTER_MOUNT_ADAPTER_WORK, ADAPTER_MOUNT_ADAPTER_WORK, ADAPTER_MOUNT_ADAPTER_WORK, false, false, null, false, false);
       addAdM((_computeExcelRow('adapter_mount_adapter', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false).sum || 0));
       row('adapter_mount_pump', 'Монтаж насоса [м]', 'м.п.', null, inclA, SUMMER_MOUNT_PRICE_PER_M, mountA, mountA, false, false, null, false, false);
@@ -3996,7 +3997,7 @@
       rows.push(['Итого оборудование', '', '', '', '', '', fmt(sumEqAPdf)]);
       rows.push(['МОНТАЖ', '', '', '', '', '', '']);
       pushAdapterRow('adapter_transport', 'Транспортные расходы', 'услуга', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true, true, 'm');
-      pushAdapterRow('adapter_trench', 'Траншея (м.п., с материалом) — в смете 0 ₽; ориентир отдельно от 2 000 ₽/м', 'м.п.', { equipC: null, qty: 1, work: 0, equipF: 0, sum: 0 }, true, true, 'm');
+      pushAdapterRow('adapter_trench', 'Траншея (с материалом)', 'м.п.', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false, true, 'm');
       pushAdapterRow('adapter_mount_adapter', 'Монтаж адаптера [шт.]', 'шт.', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false, true, 'm');
       pushAdapterRow('adapter_mount_pump', 'Монтаж насоса [м]', 'м.п.', { equipC: null, qty: inclAPdf, work: SUMMER_MOUNT_PRICE_PER_M, equipF: mountAPdf, sum: mountAPdf }, false, true, 'm');
       pushAdapterRow('adapter_pnr', 'Распайка и пусконаладочные работы [шт.]', 'шт.', { equipC: null, qty: 1, work: ADAPTER_PNR_WORK, equipF: ADAPTER_PNR_WORK, sum: ADAPTER_PNR_WORK }, false, true, 'm');
