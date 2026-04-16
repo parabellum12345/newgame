@@ -81,8 +81,9 @@
     .buraktiv-configurator .config-left-stack {
       display: flex;
       flex-direction: column;
-      flex: 0 0 auto;
-      width: clamp(640px, 58vw, 860px);
+      flex: 0 1 auto;
+      width: clamp(480px, 58vw, 860px);
+      max-width: 100%;
       min-width: 0;
       min-height: auto;
       max-height: none;
@@ -93,7 +94,8 @@
       flex-direction: column;
       gap: 0.2rem;
       min-width: 0;
-      flex: 0 0 auto;
+      flex: 1 1 360px;
+      max-width: 100%;
       min-height: auto;
       overflow: visible;
     }
@@ -101,7 +103,8 @@
       margin-top: 0;
       display: none;
     }
-    @media (max-width: 1024px) {
+    /* До ~ширины двух колонок (смета min 720px + левая до 860px) — колонка, иначе на Тильде/iframe обрезает края */
+    @media (max-width: 1650px) {
       .buraktiv-configurator {
         height: auto;
         max-height: none;
@@ -112,7 +115,8 @@
         flex-direction: column;
         align-items: stretch;
         flex: none;
-        overflow: visible;
+        overflow-x: visible;
+        overflow-y: visible;
       }
       .buraktiv-configurator .config-left-stack {
         width: 100%;
@@ -123,6 +127,7 @@
         overflow: visible;
         flex: 1 1 auto;
         min-height: 280px;
+        max-width: none;
       }
     }
     @media (max-width: 700px) {
@@ -1174,7 +1179,10 @@
     .buraktiv-configurator .materials-table-wrap {
       flex: 0 0 auto;
       min-height: auto;
-      overflow: visible;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: visible;
+      -webkit-overflow-scrolling: touch;
     }
     .buraktiv-configurator .materials-table {
       width: 100%;
