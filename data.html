@@ -1332,6 +1332,40 @@
       border-color: rgba(245, 158, 11, 0.35);
       box-shadow: inset 3px 0 0 0 #f59e0b;
     }
+    .buraktiv-configurator .materials-table .row-load-pack-note td.load-pack-note-cell {
+      padding: 0.4rem 0.55rem 0.45rem;
+      vertical-align: middle;
+      background: linear-gradient(90deg, rgba(14, 165, 233, 0.16) 0%, rgba(34, 211, 238, 0.07) 50%, rgba(15, 23, 42, 0.02) 100%);
+      border-left: 4px solid var(--accent);
+      border-top: 1px solid rgba(14, 165, 233, 0.25);
+      border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+    }
+    .buraktiv-configurator .materials-table .load-pack-note-inner {
+      font-size: 0.66rem;
+      line-height: 1.48;
+      color: var(--text-muted);
+    }
+    .buraktiv-configurator .materials-table .load-pack-badge {
+      display: inline-block;
+      padding: 0.1rem 0.4rem;
+      margin-right: 0.35rem;
+      border-radius: 999px;
+      font-size: 0.56rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      vertical-align: middle;
+      background: rgba(14, 165, 233, 0.22);
+      color: #0ea5e9;
+    }
+    .buraktiv-configurator .materials-table .load-pack-lead {
+      font-weight: 700;
+      color: var(--text);
+    }
+    .buraktiv-configurator .materials-table .load-pack-body strong {
+      color: var(--text);
+      font-weight: 700;
+    }
     .buraktiv-configurator .materials-table .row-category .cat-name { text-align: left; }
     .buraktiv-configurator .materials-table .row-total td {
       background: var(--bg-elevated);
@@ -2388,7 +2422,7 @@
 
     if (rowId === 'summer_mount' || rowId === 'summer_extra_mount' || rowId === 'adapter_mount_pump') {
       equipC = null;
-      qty = asNum(base.qty);
+      if (qty == null) qty = asNum(base.qty);
       var qMount = qty != null ? qty : asNum(base.qty);
       var wMount = work != null ? work : asNum(base.work);
       var sumMount;
@@ -2423,7 +2457,7 @@
       rowId === 'adapter_rope_clamps' ||
       rowId === 'adapter_pipe_pnd32'
     ) {
-      qty = asNum(base.qty);
+      if (qty == null) qty = asNum(base.qty);
       var defaultUnit =
         rowId === 'summer_rope_m' || rowId === 'summer_extra_rope'
           ? SUMMER_ROPE_PRICE_PER_M
@@ -3536,6 +3570,20 @@
         '<td class="col-sum total-sum">' + fmt(sumVal) + '</td>';
       tbody.appendChild(tr);
     }
+    function appendSummerLoadPackNoteRow() {
+      var tr = document.createElement('tr');
+      tr.className = 'row-load-pack-note';
+      var m = SUMMER_INCLUDED_LOAD_M;
+      var inner =
+        '<div class="load-pack-note-inner">' +
+        '<span class="load-pack-badge">Ориентир</span> ' +
+        '<span class="load-pack-lead">Загрузка до ' + m + ' м</span> — ниже строками: трос, зажимы, ПНД 32 и далее «монтаж насоса». ' +
+        'Это <strong>стартовая смета</strong> для КП. Если скважина <strong>глубже</strong>, после бурения подберём насос и пересчитаем длину троса/трубы, зажимы и монтаж под фактическое погружение ' +
+        '(при необходимости появятся строки <strong>свыше ' + m + ' м</strong>).' +
+        '</div>';
+      tr.innerHTML = '<td colspan="' + MATERIALS_TABLE_COLS + '" class="load-pack-note-cell">' + inner + '</td>';
+      tbody.appendChild(tr);
+    }
     function escScopeHtml(s) {
       return String(s || '')
         .replace(/&/g, '&amp;')
@@ -3692,6 +3740,7 @@
       addEquip((_computeExcelRow('summer_pump', { equipC: pumpOpt.price, qty: 1, work: 0, equipF: pumpOpt.price, sum: pumpOpt.price }, false).sum || 0));
       row('summer_backflow_1inch', 'Обратный клапан 1"', 'шт.', backS, 1, 0, backS, backS, false, false, false, false);
       addEquip((_computeExcelRow('summer_backflow_1inch', { equipC: backS, qty: 1, work: 0, equipF: backS, sum: backS }, false).sum || 0));
+      appendSummerLoadPackNoteRow();
       row('summer_rope_m', 'Трос нержавеющий 3 мм', 'м', SUMMER_ROPE_PRICE_PER_M, inclM, 0, ropeS, ropeS, false, false, false, false);
       addEquip((_computeExcelRow('summer_rope_m', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclM, work: 0, equipF: ropeS, sum: ropeS }, false).sum || 0));
       row('summer_rope_clamps', 'Зажимы для троса нерж. 3 мм', 'м', SUMMER_ROPE_CLAMP_PER_M, inclM, 0, clampS, clampS, false, false, false, false);
@@ -3954,6 +4003,7 @@
       rows.push(['ОБОРУДОВАНИЕ', '', '', '', '']);
       pushSummerRow('summer_pump', 'Скважинный насос (выбрано: ' + pPdf.label + ')', 'шт.', { equipC: pPdf.price, qty: 1, work: 0, equipF: pPdf.price, sum: pPdf.price }, false, true, 'e');
       pushSummerRow('summer_backflow_1inch', 'Обратный клапан 1"', 'шт.', { equipC: backPdf, qty: 1, work: 0, equipF: backPdf, sum: backPdf }, false, true, 'e');
+      rows.push(['__SUMMER_LOAD_HINT__', '', '', '', '']);
       pushSummerRow('summer_rope_m', 'Трос нержавеющий 3 мм', 'м', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclPdf, work: 0, equipF: ropePdf, sum: ropePdf }, false, true, 'e');
       pushSummerRow('summer_rope_clamps', 'Зажимы для троса нерж. 3 мм', 'м', { equipC: SUMMER_ROPE_CLAMP_PER_M, qty: inclPdf, work: 0, equipF: clampPdf, sum: clampPdf }, false, true, 'e');
       pushSummerRow('summer_cable_kv325', 'Кабель КВ 3×2,5 пищевой (опция)', 'компл.', { equipC: 0, qty: 1, work: 0, equipF: 0, sum: 0 }, false, true, 'e');
@@ -4092,6 +4142,36 @@
         return row.map(function(cell) { return { text: cell, style: 'tableHeader', fillColor: '#f1f5f9' }; });
       }
       var cell0 = row[0];
+      if (cell0 === '__SUMMER_LOAD_HINT__') {
+        var mHint = SUMMER_INCLUDED_LOAD_M;
+        return [
+          {
+            stack: [
+              { text: 'Ориентир для клиента', fontSize: 7, bold: true, color: '#0c4a6e', margin: [0, 0, 0, 2] },
+              {
+                text:
+                  'Загрузка до ' +
+                  mHint +
+                  ' м: ниже — трос, зажимы, ПНД 32 и блок «монтаж насоса». Стартовая смета для КП. Если скважина глубже, после бурения подберём насос и пересчитаем эти позиции по факту погружения (при необходимости — строки «свыше ' +
+                  mHint +
+                  ' м»).',
+                fontSize: 6.5,
+                color: '#334155',
+                alignment: 'left',
+                lineHeight: 1.35
+              }
+            ],
+            colSpan: 5,
+            fillColor: '#eff6ff',
+            border: [false, false, false, false],
+            margin: [4, 6, 4, 6]
+          },
+          {},
+          {},
+          {},
+          {}
+        ];
+      }
       if (cell0 === '__PDF_BLOCK_SEP__') {
         var sk = row[1] || '';
         if (sk === 'ЭТАП_1') {
