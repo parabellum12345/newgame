@@ -2225,6 +2225,7 @@
             <span class="control-label">Тип обустройства</span>
             <div class="option-cards">
               <button type="button" class="option-card arrangement" data-arrangement="summer">Летний вариант</button>
+              <button type="button" class="option-card arrangement" data-arrangement="semi_adapter">Полуадаптер</button>
               <button type="button" class="option-card arrangement" data-arrangement="adapter">Скважинный адаптер</button>
               <button type="button" class="option-card arrangement" data-arrangement="metal_caisson">Металлический кессон</button>
               <button type="button" class="option-card arrangement" data-arrangement="plastic_caisson">Пластиковый кессон</button>
@@ -2527,6 +2528,17 @@
       return { equipC: equipC, qty: qty, work: work, equipF: equipF, sum: sum };
     }
 
+    // Адаптер: зажимы считаем комплектом (1 шт), а не "по метрам"
+    if (rowId === 'adapter_rope_clamps') {
+      if (qty == null) qty = 1;
+      if (equipC == null) equipC = asNum(base.equipC);
+      if (equipC == null) equipC = getAdapterClampSum();
+      if (work == null) work = 0;
+      if (sum == null) sum = Math.round((qty || 0) * equipC);
+      if (equipF == null) equipF = sum;
+      return { equipC: equipC, qty: qty, work: work, equipF: equipF, sum: sum };
+    }
+
     if (
       rowId === 'summer_rope_m' ||
       rowId === 'summer_rope_clamps' ||
@@ -2534,7 +2546,6 @@
       rowId === 'summer_extra_rope' ||
       rowId === 'summer_extra_pipe' ||
       rowId === 'adapter_rope_m' ||
-      rowId === 'adapter_rope_clamps' ||
       rowId === 'adapter_pipe_pnd32'
     ) {
       if (qty == null) qty = asNum(base.qty);
@@ -2713,10 +2724,11 @@
   var ADAPTER_HEAT_CABLE_KIT = 5500;
   var ADAPTER_INSULATION = 1100;
   var ADAPTER_THERMAL_PLUG = 350;
-  var ADAPTER_MOUNT_ADAPTER_WORK = 3800;
+  var ADAPTER_MOUNT_ADAPTER_WORK = 8000;
   var ADAPTER_PNR_WORK = 3200;
   var ADAPTER_UNDERFOUND_WORK = 5000;
-  var ADAPTER_CONSUMABLES_SUM = 11680;
+  // Компенсация: подняли "Монтаж адаптера" до 8 000 ₽, чтобы итог по блоку не разъезжался — уменьшаем расходники.
+  var ADAPTER_CONSUMABLES_SUM = 7480;
   var RIG_LABELS = {
     mgbu: 'МГБУ (малогабаритная техника)',
     zil131: 'ЗИЛ-131 (крупногабаритная техника)'
@@ -2746,6 +2758,7 @@
     },
     arrangement: {
       summer: { title: 'Летний вариант', desc: 'Для дачи и сезона. Оборудование на поверхности.', list: ['Низкая стоимость', 'Для дачи'], when: '', price: '≈ 55 000 ₽', tip: '' },
+      semi_adapter: { title: 'Полуадаптер', desc: 'Упрощённая смета адаптера: труба в дом без части автоматики и комплектов.', list: ['Без кессона', 'Упрощённая комплектация'], when: '', price: '—', tip: '' },
       adapter: { title: 'Скважинный адаптер', desc: 'Труба в дом без кессона. Экономия места и бюджета.', list: ['Без кессона', 'Круглый год'], when: '', price: '100 000 ₽', tip: '' },
       metal_caisson: { title: 'Металлический кессон', desc: 'Прочная камера из металла. Надёжная защита оборудования.', list: ['Прочность', 'Доступ к оборудованию'], when: '', price: '130 000 ₽', tip: '' },
       plastic_caisson: { title: 'Пластиковый кессон', desc: 'Герметичная камера. Не ржавеет, без обслуживания.', list: ['Долговечность', 'Круглый год'], when: '', price: '150 000 ₽', tip: '' }
@@ -2967,7 +2980,7 @@
       (_computeExcelRow('adapter_insulation', { equipC: ADAPTER_INSULATION, qty: 1, work: 0, equipF: ADAPTER_INSULATION, sum: ADAPTER_INSULATION }, false).sum || 0) +
       (_computeExcelRow('adapter_thermal_plug', { equipC: ADAPTER_THERMAL_PLUG, qty: 1, work: 0, equipF: ADAPTER_THERMAL_PLUG, sum: ADAPTER_THERMAL_PLUG }, false).sum || 0) +
       (_computeExcelRow('adapter_rope_m', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclA, work: 0, equipF: ropeS, sum: ropeS }, false).sum || 0) +
-      (_computeExcelRow('adapter_rope_clamps', { equipC: SUMMER_ROPE_CLAMP_PER_M, qty: inclA, work: 0, equipF: clampS, sum: clampS }, false).sum || 0) +
+      (_computeExcelRow('adapter_rope_clamps', { equipC: clampS, qty: 1, work: 0, equipF: clampS, sum: clampS }, false).sum || 0) +
       (_computeExcelRow('adapter_pipe_pnd32', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: inclA, work: 0, equipF: pipeS, sum: pipeS }, false).sum || 0) +
       (_computeExcelRow('adapter_transport', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true).sum || 0) +
       (_computeExcelRow('adapter_trench', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false).sum || 0) +
@@ -2975,6 +2988,46 @@
       (_computeExcelRow('adapter_mount_adapter', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false).sum || 0) +
       (_computeExcelRow('adapter_pnr', { equipC: null, qty: 1, work: ADAPTER_PNR_WORK, equipF: ADAPTER_PNR_WORK, sum: ADAPTER_PNR_WORK }, false).sum || 0) +
       (_computeExcelRow('adapter_underfound', { equipC: null, qty: 1, work: ADAPTER_UNDERFOUND_WORK, equipF: ADAPTER_UNDERFOUND_WORK, sum: ADAPTER_UNDERFOUND_WORK }, false).sum || 0)
+    );
+  }
+  function getSemiAdapterArrangementSubtotal() {
+    var inclA = getAdapterIncludedMeterQty();
+    var ropeS = getAdapterRopeSum();
+    var clampS = getAdapterClampSum();
+    var pipeS = getAdapterPipeSum();
+    var mountP = getAdapterPumpMountSum();
+    if (!_manualHasAnyOverrides()) {
+      return (
+        ADAPTER_PUMP_PRICE +
+        SUMMER_BACKFLOW_1_INCH_DEFAULT +
+        ADAPTER_BRONZE_ADAPTER_MAT +
+        ADAPTER_FITTINGS_KIT +
+        ADAPTER_CAP_VVS +
+        ADAPTER_CONSUMABLES_SUM +
+        ropeS +
+        clampS +
+        pipeS +
+        ADAPTER_TRANSPORT_FIXED +
+        mountP +
+        ADAPTER_MOUNT_ADAPTER_WORK +
+        ADAPTER_PNR_WORK
+      );
+    }
+    return (
+      (_computeExcelRow('adapter_pump', { equipC: ADAPTER_PUMP_PRICE, qty: 1, work: 0, equipF: ADAPTER_PUMP_PRICE, sum: ADAPTER_PUMP_PRICE }, false).sum || 0) +
+      (_computeExcelRow('adapter_backflow_1', { equipC: SUMMER_BACKFLOW_1_INCH_DEFAULT, qty: 1, work: 0, equipF: SUMMER_BACKFLOW_1_INCH_DEFAULT, sum: SUMMER_BACKFLOW_1_INCH_DEFAULT }, false).sum || 0) +
+      (_computeExcelRow('adapter_bronze_adapter', { equipC: ADAPTER_BRONZE_ADAPTER_MAT, qty: 1, work: 0, equipF: ADAPTER_BRONZE_ADAPTER_MAT, sum: ADAPTER_BRONZE_ADAPTER_MAT }, false).sum || 0) +
+      (_computeExcelRow('adapter_fittings_kit', { equipC: ADAPTER_FITTINGS_KIT, qty: 1, work: 0, equipF: ADAPTER_FITTINGS_KIT, sum: ADAPTER_FITTINGS_KIT }, false).sum || 0) +
+      (_computeExcelRow('adapter_cap_vvs', { equipC: ADAPTER_CAP_VVS, qty: 1, work: 0, equipF: ADAPTER_CAP_VVS, sum: ADAPTER_CAP_VVS }, false).sum || 0) +
+      (_computeExcelRow('adapter_consumables', { equipC: ADAPTER_CONSUMABLES_SUM, qty: 1, work: 0, equipF: ADAPTER_CONSUMABLES_SUM, sum: ADAPTER_CONSUMABLES_SUM }, true).sum || 0) +
+      (_computeExcelRow('adapter_rope_m', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclA, work: 0, equipF: ropeS, sum: ropeS }, false).sum || 0) +
+      (_computeExcelRow('adapter_rope_clamps', { equipC: clampS, qty: 1, work: 0, equipF: clampS, sum: clampS }, false).sum || 0) +
+      (_computeExcelRow('adapter_pipe_pnd32', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: inclA, work: 0, equipF: pipeS, sum: pipeS }, false).sum || 0) +
+      (_computeExcelRow('adapter_transport', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true).sum || 0) +
+      (_computeExcelRow('adapter_trench', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false).sum || 0) +
+      (_computeExcelRow('adapter_mount_pump', { equipC: null, qty: inclA, work: SUMMER_MOUNT_PRICE_PER_M, equipF: mountP, sum: mountP }, false).sum || 0) +
+      (_computeExcelRow('adapter_mount_adapter', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false).sum || 0) +
+      (_computeExcelRow('adapter_pnr', { equipC: null, qty: 1, work: ADAPTER_PNR_WORK, equipF: ADAPTER_PNR_WORK, sum: ADAPTER_PNR_WORK }, false).sum || 0)
     );
   }
   function getExtrasSubtotal() {
@@ -3047,7 +3100,7 @@
         total += (_computeExcelRow('adapter_insulation', { equipC: ADAPTER_INSULATION, qty: 1, work: 0, equipF: ADAPTER_INSULATION, sum: ADAPTER_INSULATION }, false).sum || 0);
         total += (_computeExcelRow('adapter_thermal_plug', { equipC: ADAPTER_THERMAL_PLUG, qty: 1, work: 0, equipF: ADAPTER_THERMAL_PLUG, sum: ADAPTER_THERMAL_PLUG }, false).sum || 0);
         total += (_computeExcelRow('adapter_rope_m', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclAd, work: 0, equipF: ropeAd, sum: ropeAd }, false).sum || 0);
-        total += (_computeExcelRow('adapter_rope_clamps', { equipC: SUMMER_ROPE_CLAMP_PER_M, qty: inclAd, work: 0, equipF: clampAd, sum: clampAd }, false).sum || 0);
+        total += (_computeExcelRow('adapter_rope_clamps', { equipC: clampAd, qty: 1, work: 0, equipF: clampAd, sum: clampAd }, false).sum || 0);
         total += (_computeExcelRow('adapter_pipe_pnd32', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: inclAd, work: 0, equipF: pipeAd, sum: pipeAd }, false).sum || 0);
         total += (_computeExcelRow('adapter_transport', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true).sum || 0);
         total += (_computeExcelRow('adapter_trench', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false).sum || 0);
@@ -3055,6 +3108,26 @@
         total += (_computeExcelRow('adapter_mount_adapter', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false).sum || 0);
         total += (_computeExcelRow('adapter_pnr', { equipC: null, qty: 1, work: ADAPTER_PNR_WORK, equipF: ADAPTER_PNR_WORK, sum: ADAPTER_PNR_WORK }, false).sum || 0);
         total += (_computeExcelRow('adapter_underfound', { equipC: null, qty: 1, work: ADAPTER_UNDERFOUND_WORK, equipF: ADAPTER_UNDERFOUND_WORK, sum: ADAPTER_UNDERFOUND_WORK }, false).sum || 0);
+      } else if (state.arrangement === 'semi_adapter') {
+        var inclSa = getAdapterIncludedMeterQty();
+        var ropeSa = getAdapterRopeSum();
+        var clampSa = getAdapterClampSum();
+        var pipeSa = getAdapterPipeSum();
+        var mountSa = getAdapterPumpMountSum();
+        total += (_computeExcelRow('adapter_pump', { equipC: ADAPTER_PUMP_PRICE, qty: 1, work: 0, equipF: ADAPTER_PUMP_PRICE, sum: ADAPTER_PUMP_PRICE }, false).sum || 0);
+        total += (_computeExcelRow('adapter_backflow_1', { equipC: SUMMER_BACKFLOW_1_INCH_DEFAULT, qty: 1, work: 0, equipF: SUMMER_BACKFLOW_1_INCH_DEFAULT, sum: SUMMER_BACKFLOW_1_INCH_DEFAULT }, false).sum || 0);
+        total += (_computeExcelRow('adapter_bronze_adapter', { equipC: ADAPTER_BRONZE_ADAPTER_MAT, qty: 1, work: 0, equipF: ADAPTER_BRONZE_ADAPTER_MAT, sum: ADAPTER_BRONZE_ADAPTER_MAT }, false).sum || 0);
+        total += (_computeExcelRow('adapter_rope_m', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclSa, work: 0, equipF: ropeSa, sum: ropeSa }, false).sum || 0);
+        total += (_computeExcelRow('adapter_rope_clamps', { equipC: clampSa, qty: 1, work: 0, equipF: clampSa, sum: clampSa }, false).sum || 0);
+        total += (_computeExcelRow('adapter_pipe_pnd32', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: inclSa, work: 0, equipF: pipeSa, sum: pipeSa }, false).sum || 0);
+        total += (_computeExcelRow('adapter_fittings_kit', { equipC: ADAPTER_FITTINGS_KIT, qty: 1, work: 0, equipF: ADAPTER_FITTINGS_KIT, sum: ADAPTER_FITTINGS_KIT }, false).sum || 0);
+        total += (_computeExcelRow('adapter_cap_vvs', { equipC: ADAPTER_CAP_VVS, qty: 1, work: 0, equipF: ADAPTER_CAP_VVS, sum: ADAPTER_CAP_VVS }, false).sum || 0);
+        total += (_computeExcelRow('adapter_consumables', { equipC: ADAPTER_CONSUMABLES_SUM, qty: 1, work: 0, equipF: ADAPTER_CONSUMABLES_SUM, sum: ADAPTER_CONSUMABLES_SUM }, true).sum || 0);
+        total += (_computeExcelRow('adapter_transport', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true).sum || 0);
+        total += (_computeExcelRow('adapter_trench', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false).sum || 0);
+        total += (_computeExcelRow('adapter_mount_adapter', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false).sum || 0);
+        total += (_computeExcelRow('adapter_mount_pump', { equipC: null, qty: inclSa, work: SUMMER_MOUNT_PRICE_PER_M, equipF: mountSa, sum: mountSa }, false).sum || 0);
+        total += (_computeExcelRow('adapter_pnr', { equipC: null, qty: 1, work: ADAPTER_PNR_WORK, equipF: ADAPTER_PNR_WORK, sum: ADAPTER_PNR_WORK }, false).sum || 0);
       } else if (state.arrangement === 'metal_caisson') {
         total += (_computeExcelRow('caisson_metal', { equipC: null, qty: 1, work: null, equipF: null, sum: ARRANGEMENT_PRICES.metal_caisson || 0 }, true).sum || 0);
       } else if (state.arrangement === 'plastic_caisson') {
@@ -3082,6 +3155,7 @@
     var arr = 0;
     if (state.arrangement === 'summer') arr = getSummerArrangementSubtotal();
     else if (state.arrangement === 'adapter') arr = getAdapterArrangementSubtotal();
+    else if (state.arrangement === 'semi_adapter') arr = getSemiAdapterArrangementSubtotal();
     else if (state.arrangement) arr = ARRANGEMENT_PRICES[state.arrangement] || 0;
     var ext = getExtrasSubtotal();
     return Math.round((base + arr + ext) / 1000) * 1000;
@@ -3210,6 +3284,16 @@
       lines.push('✔️ Транспорт; монтаж адаптера и насоса до ' + ADAPTER_INCLUDED_M + ' м по глубине сметы; распайка и ПНР');
       lines.push('✔️ Прокол / подкоп под фундаментом (ввод в дом)');
       lines.push('✔️ Траншея (с материалом): в смете 2 000 ₽/м в колонках материалов и «работа+материалы», по умолчанию 0 м — метраж укажите в таблице при необходимости');
+    } else if (state.arrangement === 'semi_adapter') {
+      arrPrice = getSemiAdapterArrangementSubtotal();
+      arrTitle = '🏠 Обустройство скважины (полуадаптер) под ключ — ' + fmt(arrPrice) + ' ₽';
+      lines.push(arrTitle);
+      lines.push('');
+      lines.push('Включает (по строкам сметы):');
+      lines.push('✔️ Насос, обратный клапан 1"');
+      lines.push('✔️ Адаптер 1" бронза, трос и зажимы (комплект), ПНД32, фитинги и арматура, крышка VVSystems 133');
+      lines.push('✔️ Расходники; транспорт; монтаж адаптера и насоса до ' + ADAPTER_INCLUDED_M + ' м; распайка и ПНР');
+      lines.push('✔️ Траншея (с материалом): в смете 2 000 ₽/м, по умолчанию 0 м — метраж укажите в таблице при необходимости');
     } else if (state.arrangement === 'metal_caisson') {
       arrPrice = ARRANGEMENT_PRICES.metal_caisson;
       arrTitle = '🏠 Обустройство скважины с металлическим кессоном под ключ — ' + fmt(arrPrice) + ' ₽';
@@ -3254,7 +3338,7 @@
       lines.push('💧 Скважина (бурение' + (state.wellType === 'sand' ? ' + фильтр' : '') + ') — ' + fmt(drillBlockTotal) + ' ₽');
     }
     if (state.arrangement) {
-      var sumName = { summer: 'Летнее обустройство', adapter: 'Адаптер', metal_caisson: 'Металлический кессон', plastic_caisson: 'Пластиковый кессон' };
+      var sumName = { summer: 'Летнее обустройство', semi_adapter: 'Полуадаптер', adapter: 'Адаптер', metal_caisson: 'Металлический кессон', plastic_caisson: 'Пластиковый кессон' };
       lines.push('🏠 ' + (sumName[state.arrangement] || 'Обустройство') + ' — ' + fmt(arrPrice) + ' ₽');
     }
     if (extSum > 0) {
@@ -3405,14 +3489,14 @@
     var caissonTrench = svg.querySelector('#caisson-trench');
     if (plastic) plastic.style.opacity = state.arrangement === 'plastic_caisson' ? '1' : '0';
     if (metal) metal.style.opacity = state.arrangement === 'metal_caisson' ? '1' : '0';
-    if (adapter) adapter.style.opacity = state.arrangement === 'adapter' ? '1' : '0';
+    if (adapter) adapter.style.opacity = (state.arrangement === 'adapter' || state.arrangement === 'semi_adapter') ? '1' : '0';
     if (summer) summer.style.opacity = state.arrangement === 'summer' ? '1' : '0';
     if (pipeC) pipeC.style.opacity = (state.arrangement === 'plastic_caisson' || state.arrangement === 'metal_caisson') ? '1' : '0';
     if (caissonTrench) caissonTrench.style.opacity = (state.arrangement === 'plastic_caisson' || state.arrangement === 'metal_caisson') ? '1' : '0';
     var defaultHouse = svg.querySelector('#default-house');
     var adapterHouse = svg.querySelector('#adapter-house-group');
-    if (defaultHouse) defaultHouse.style.opacity = state.arrangement === 'adapter' ? '0' : '1';
-    if (adapterHouse) adapterHouse.style.opacity = state.arrangement === 'adapter' ? '1' : '0';
+    if (defaultHouse) defaultHouse.style.opacity = (state.arrangement === 'adapter' || state.arrangement === 'semi_adapter') ? '0' : '1';
+    if (adapterHouse) adapterHouse.style.opacity = (state.arrangement === 'adapter' || state.arrangement === 'semi_adapter') ? '1' : '0';
     var ticks = svg.querySelectorAll('.depth-tick');
     var labels = svg.querySelectorAll('.depth-label');
     var baseY = surfaceY, range = pipeH - 25;
@@ -3585,6 +3669,19 @@
             ADAPTER_ORIENT_TOTAL.toLocaleString('ru-RU') +
             ' ₽ по строкам сметы. Траншея (с материалом): 2 000 ₽/м в материалах и «работа+материалы», количество по умолчанию 0 м — внесите метраж в таблице. ' +
             'Трос, ПНД32 и монтаж насоса в комплекте — ' + ADAPTER_INCLUDED_M + ' м (фикс в смете).'
+        );
+      } else if (state.arrangement === 'semi_adapter') {
+        var sumSa = getSemiAdapterArrangementSubtotal();
+        var sumExSa = getExtrasSubtotal();
+        if (sumExSa > 0) {
+          set('detail-arrangement-price', sumSa.toLocaleString('ru-RU') + ' ₽ + доп. ' + sumExSa.toLocaleString('ru-RU') + ' ₽ = ' + (sumSa + sumExSa).toLocaleString('ru-RU') + ' ₽');
+        } else {
+          set('detail-arrangement-price', sumSa.toLocaleString('ru-RU') + ' ₽');
+        }
+        set(
+          'detail-arrangement-tip',
+          'Упрощённая смета «адаптер»: без бака/автоматики и без комплекта термокабеля. Траншея (с материалом): 2 000 ₽/м, количество по умолчанию 0 м — внесите метраж в таблице. ' +
+          'Трос, ПНД32 и монтаж насоса в комплекте — ' + ADAPTER_INCLUDED_M + ' м.'
         );
       } else {
         var arrP = ARRANGEMENT_PRICES[state.arrangement];
@@ -3980,8 +4077,8 @@
       addAdE((_computeExcelRow('adapter_bronze_adapter', { equipC: ADAPTER_BRONZE_ADAPTER_MAT, qty: 1, work: 0, equipF: ADAPTER_BRONZE_ADAPTER_MAT, sum: ADAPTER_BRONZE_ADAPTER_MAT }, false).sum || 0));
       row('adapter_rope_m', 'Трос нержавеющий 3 мм [м]', 'м', SUMMER_ROPE_PRICE_PER_M, inclA, 0, ropeA, ropeA, false, false, null, false, false);
       addAdE((_computeExcelRow('adapter_rope_m', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclA, work: 0, equipF: ropeA, sum: ropeA }, false).sum || 0));
-      row('adapter_rope_clamps', 'Зажимы для троса нерж. 3 мм [м]', 'м', SUMMER_ROPE_CLAMP_PER_M, inclA, 0, clampA, clampA, false, false, null, false, false);
-      addAdE((_computeExcelRow('adapter_rope_clamps', { equipC: SUMMER_ROPE_CLAMP_PER_M, qty: inclA, work: 0, equipF: clampA, sum: clampA }, false).sum || 0));
+      row('adapter_rope_clamps', 'Зажимы для троса нерж. 3 мм', 'шт.', clampA, 1, 0, clampA, clampA, false, false, null, false, false);
+      addAdE((_computeExcelRow('adapter_rope_clamps', { equipC: clampA, qty: 1, work: 0, equipF: clampA, sum: clampA }, false).sum || 0));
       row('adapter_pipe_pnd32', 'Труба питьевая ПНД32, SDR 11 [м]', 'м', SUMMER_PIPE_PND32_PRICE_PER_M, inclA, 0, pipeA, pipeA, false, false, null, false, false);
       addAdE((_computeExcelRow('adapter_pipe_pnd32', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: inclA, work: 0, equipF: pipeA, sum: pipeA }, false).sum || 0));
       row('adapter_fittings_kit', 'Фитинги и запорная арматура [компл.]', 'компл.', ADAPTER_FITTINGS_KIT, 1, 0, ADAPTER_FITTINGS_KIT, ADAPTER_FITTINGS_KIT, false, false, null, false, false);
@@ -4025,6 +4122,75 @@
       addAdM((_computeExcelRow('adapter_underfound', { equipC: null, qty: 1, work: ADAPTER_UNDERFOUND_WORK, equipF: ADAPTER_UNDERFOUND_WORK, sum: ADAPTER_UNDERFOUND_WORK }, false).sum || 0));
       subtotalRow('Итого работы по монтажу', sumAdM);
       subtotalRow('Всего за обустройство водоснабжения (адаптер)', sumAdE + sumAdM);
+    } else if (state.arrangement === 'semi_adapter') {
+      var inclS = getAdapterIncludedMeterQty();
+      var ropeS2 = getAdapterRopeSum();
+      var clampS2 = getAdapterClampSum();
+      var pipeS2 = getAdapterPipeSum();
+      var mountS2 = getAdapterPumpMountSum();
+      var sumSe = 0;
+      var sumSm = 0;
+      function addSe(v) {
+        var n = Number(v);
+        if (!isNaN(n)) {
+          sumSe += n;
+          addSum(n);
+        }
+      }
+      function addSm(v) {
+        var n = Number(v);
+        if (!isNaN(n)) {
+          sumSm += n;
+          addSum(n);
+        }
+      }
+      row('cat_semi_adapter', '«ПОЛУАДАПТЕР»', '', '', '', '', '', 0, true, false);
+      row('cat_semi_adapter_equip', 'ОБОРУДОВАНИЕ', '', '', '', '', '', 0, true, false);
+      row('adapter_pump', 'Скважинный насос погружной [шт.]', 'шт.', ADAPTER_PUMP_PRICE, 1, 0, ADAPTER_PUMP_PRICE, ADAPTER_PUMP_PRICE, false, false, null, false, false);
+      addSe((_computeExcelRow('adapter_pump', { equipC: ADAPTER_PUMP_PRICE, qty: 1, work: 0, equipF: ADAPTER_PUMP_PRICE, sum: ADAPTER_PUMP_PRICE }, false).sum || 0));
+      row('adapter_backflow_1', 'Обратный клапан 1" [шт.]', 'шт.', SUMMER_BACKFLOW_1_INCH_DEFAULT, 1, 0, SUMMER_BACKFLOW_1_INCH_DEFAULT, SUMMER_BACKFLOW_1_INCH_DEFAULT, false, false, null, false, false);
+      addSe((_computeExcelRow('adapter_backflow_1', { equipC: SUMMER_BACKFLOW_1_INCH_DEFAULT, qty: 1, work: 0, equipF: SUMMER_BACKFLOW_1_INCH_DEFAULT, sum: SUMMER_BACKFLOW_1_INCH_DEFAULT }, false).sum || 0));
+      row('adapter_bronze_adapter', 'Адаптер 1" бронза [шт.]', 'шт.', ADAPTER_BRONZE_ADAPTER_MAT, 1, 0, ADAPTER_BRONZE_ADAPTER_MAT, ADAPTER_BRONZE_ADAPTER_MAT, false, false, null, false, false);
+      addSe((_computeExcelRow('adapter_bronze_adapter', { equipC: ADAPTER_BRONZE_ADAPTER_MAT, qty: 1, work: 0, equipF: ADAPTER_BRONZE_ADAPTER_MAT, sum: ADAPTER_BRONZE_ADAPTER_MAT }, false).sum || 0));
+      row('adapter_rope_m', 'Трос нержавеющий 3 мм [м]', 'м', SUMMER_ROPE_PRICE_PER_M, inclS, 0, ropeS2, ropeS2, false, false, null, false, false);
+      addSe((_computeExcelRow('adapter_rope_m', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclS, work: 0, equipF: ropeS2, sum: ropeS2 }, false).sum || 0));
+      row('adapter_rope_clamps', 'Зажимы для троса нерж. 3 мм', 'шт.', clampS2, 1, 0, clampS2, clampS2, false, false, null, false, false);
+      addSe((_computeExcelRow('adapter_rope_clamps', { equipC: clampS2, qty: 1, work: 0, equipF: clampS2, sum: clampS2 }, false).sum || 0));
+      row('adapter_pipe_pnd32', 'Труба питьевая ПНД32, SDR 11 [м]', 'м', SUMMER_PIPE_PND32_PRICE_PER_M, inclS, 0, pipeS2, pipeS2, false, false, null, false, false);
+      addSe((_computeExcelRow('adapter_pipe_pnd32', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: inclS, work: 0, equipF: pipeS2, sum: pipeS2 }, false).sum || 0));
+      row('adapter_fittings_kit', 'Фитинги и запорная арматура [компл.]', 'компл.', ADAPTER_FITTINGS_KIT, 1, 0, ADAPTER_FITTINGS_KIT, ADAPTER_FITTINGS_KIT, false, false, null, false, false);
+      addSe((_computeExcelRow('adapter_fittings_kit', { equipC: ADAPTER_FITTINGS_KIT, qty: 1, work: 0, equipF: ADAPTER_FITTINGS_KIT, sum: ADAPTER_FITTINGS_KIT }, false).sum || 0));
+      row('adapter_cap_vvs', 'Скважинная крышка VVSystems 133 [шт.]', 'шт.', ADAPTER_CAP_VVS, 1, 0, ADAPTER_CAP_VVS, ADAPTER_CAP_VVS, false, false, null, false, false);
+      addSe((_computeExcelRow('adapter_cap_vvs', { equipC: ADAPTER_CAP_VVS, qty: 1, work: 0, equipF: ADAPTER_CAP_VVS, sum: ADAPTER_CAP_VVS }, false).sum || 0));
+      row('adapter_consumables', 'Расходные материалы адаптер [компл.]', 'компл.', ADAPTER_CONSUMABLES_SUM, 1, 0, ADAPTER_CONSUMABLES_SUM, ADAPTER_CONSUMABLES_SUM, false, false, null, false, true);
+      addSe((_computeExcelRow('adapter_consumables', { equipC: ADAPTER_CONSUMABLES_SUM, qty: 1, work: 0, equipF: ADAPTER_CONSUMABLES_SUM, sum: ADAPTER_CONSUMABLES_SUM }, true).sum || 0));
+      subtotalRow('Итого оборудование', sumSe);
+      row('cat_semi_adapter_mont', 'МОНТАЖ', '', '', '', '', '', 0, true, false);
+      row('adapter_transport', 'Транспортные расходы', 'услуга', null, 1, ADAPTER_TRANSPORT_FIXED, ADAPTER_TRANSPORT_FIXED, ADAPTER_TRANSPORT_FIXED, false, false, null, false, true);
+      addSm((_computeExcelRow('adapter_transport', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true).sum || 0));
+      row(
+        'adapter_trench',
+        'Траншея (с материалом)',
+        'м.п.',
+        ADAPTER_TRENCH_PRICE_PER_M,
+        0,
+        0,
+        null,
+        null,
+        false,
+        false,
+        null,
+        false
+      );
+      addSm((_computeExcelRow('adapter_trench', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false).sum || 0));
+      row('adapter_mount_adapter', 'Монтаж адаптера [шт.]', 'шт.', null, 1, ADAPTER_MOUNT_ADAPTER_WORK, ADAPTER_MOUNT_ADAPTER_WORK, ADAPTER_MOUNT_ADAPTER_WORK, false, false, null, false, false);
+      addSm((_computeExcelRow('adapter_mount_adapter', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false).sum || 0));
+      row('adapter_mount_pump', 'Монтаж насоса [м]', 'м.п.', null, inclS, SUMMER_MOUNT_PRICE_PER_M, mountS2, mountS2, false, false, null, false, false);
+      addSm((_computeExcelRow('adapter_mount_pump', { equipC: null, qty: inclS, work: SUMMER_MOUNT_PRICE_PER_M, equipF: mountS2, sum: mountS2 }, false).sum || 0));
+      row('adapter_pnr', 'Распайка и пусконаладочные работы [шт.]', 'шт.', null, 1, ADAPTER_PNR_WORK, ADAPTER_PNR_WORK, ADAPTER_PNR_WORK, false, false, null, false, false);
+      addSm((_computeExcelRow('adapter_pnr', { equipC: null, qty: 1, work: ADAPTER_PNR_WORK, equipF: ADAPTER_PNR_WORK, sum: ADAPTER_PNR_WORK }, false).sum || 0));
+      subtotalRow('Итого работы по монтажу', sumSm);
+      subtotalRow('Всего за обустройство водоснабжения (полуадаптер)', sumSe + sumSm);
     } else if (state.arrangement === 'metal_caisson') {
       row('caisson_metal', 'Обустройство: Металлический кессон', 'услуга', '', 1, '', '', ARRANGEMENT_PRICES.metal_caisson, false, false, null, false, true);
       addSum((_computeExcelRow('caisson_metal', { equipC: null, qty: 1, work: null, equipF: null, sum: ARRANGEMENT_PRICES.metal_caisson }, true).sum || 0));
@@ -4125,6 +4291,8 @@
       var sepKey =
         state.arrangement === 'summer'
           ? 'ЛЕТНИЙ ПОЛИВ'
+          : state.arrangement === 'semi_adapter'
+            ? 'ПОЛУАДАПТЕР'
           : state.arrangement === 'adapter'
             ? 'СКВАЖИННЫЙ АДАПТЕР'
             : state.arrangement === 'metal_caisson'
@@ -4227,7 +4395,7 @@
       pushAdapterRow('adapter_backflow_1', 'Обратный клапан 1" [шт.]', 'шт.', { equipC: SUMMER_BACKFLOW_1_INCH_DEFAULT, qty: 1, work: 0, equipF: SUMMER_BACKFLOW_1_INCH_DEFAULT, sum: SUMMER_BACKFLOW_1_INCH_DEFAULT }, false, true, 'e');
       pushAdapterRow('adapter_bronze_adapter', 'Адаптер 1" бронза [шт.]', 'шт.', { equipC: ADAPTER_BRONZE_ADAPTER_MAT, qty: 1, work: 0, equipF: ADAPTER_BRONZE_ADAPTER_MAT, sum: ADAPTER_BRONZE_ADAPTER_MAT }, false, true, 'e');
       pushAdapterRow('adapter_rope_m', 'Трос нержавеющий 3 мм [м]', 'м', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclAPdf, work: 0, equipF: ropeAPdf, sum: ropeAPdf }, false, true, 'e');
-      pushAdapterRow('adapter_rope_clamps', 'Зажимы для троса нерж. 3 мм [м]', 'м', { equipC: SUMMER_ROPE_CLAMP_PER_M, qty: inclAPdf, work: 0, equipF: clampAPdf, sum: clampAPdf }, false, true, 'e');
+      pushAdapterRow('adapter_rope_clamps', 'Зажимы для троса нерж. 3 мм', 'шт.', { equipC: clampAPdf, qty: 1, work: 0, equipF: clampAPdf, sum: clampAPdf }, false, true, 'e');
       pushAdapterRow('adapter_pipe_pnd32', 'Труба питьевая ПНД32, SDR 11 [м]', 'м', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: inclAPdf, work: 0, equipF: pipeAPdf, sum: pipeAPdf }, false, true, 'e');
       pushAdapterRow('adapter_fittings_kit', 'Фитинги и запорная арматура [компл.]', 'компл.', { equipC: ADAPTER_FITTINGS_KIT, qty: 1, work: 0, equipF: ADAPTER_FITTINGS_KIT, sum: ADAPTER_FITTINGS_KIT }, false, true, 'e');
       pushAdapterRow('adapter_cap_vvs', 'Скважинная крышка VVSystems 133 [шт.]', 'шт.', { equipC: ADAPTER_CAP_VVS, qty: 1, work: 0, equipF: ADAPTER_CAP_VVS, sum: ADAPTER_CAP_VVS }, false, true, 'e');
@@ -4245,6 +4413,50 @@
       pushAdapterRow('adapter_underfound', 'Прокол / подкоп под фундаментом (ввод в дом) [компл.]', 'компл.', { equipC: null, qty: 1, work: ADAPTER_UNDERFOUND_WORK, equipF: ADAPTER_UNDERFOUND_WORK, sum: ADAPTER_UNDERFOUND_WORK }, false, true, 'm');
       rows.push(['Итого работы по монтажу', '', '', '', fmt(sumMoAPdf)]);
       rows.push(['Всего за обустройство водоснабжения (адаптер)', '', '', '', fmt(sumEqAPdf + sumMoAPdf)]);
+    } else if (state.arrangement === 'semi_adapter') {
+      var inclSPdf = getAdapterIncludedMeterQty();
+      var ropeSPdf = getAdapterRopeSum();
+      var clampSPdf = getAdapterClampSum();
+      var pipeSPdf = getAdapterPipeSum();
+      var mountSPdf = getAdapterPumpMountSum();
+      var sumEqSPdf = 0;
+      var sumMoSPdf = 0;
+      function pushSemiRow(rowId, displayName, unit, base, fixedIfNoOverrides, workDashWhenZero, bucket) {
+        if (_isRowHidden(rowId)) return;
+        var r = _computeExcelRow(rowId, base, !!fixedIfNoOverrides);
+        var sumN = r && r.sum != null ? Number(r.sum) : 0;
+        if (!isNaN(sumN)) {
+          totalAll += sumN;
+          if (bucket === 'e') sumEqSPdf += sumN;
+          else if (bucket === 'm') sumMoSPdf += sumN;
+        }
+        rows.push([
+          displayName,
+          unit || '',
+          fmtQty(r ? r.qty : ''),
+          materialsPriceCellText(r, rowId),
+          fmt(r ? r.sum : '')
+        ]);
+      }
+      rows.push(['ОБОРУДОВАНИЕ', '', '', '', '']);
+      pushSemiRow('adapter_pump', 'Скважинный насос погружной [шт.]', 'шт.', { equipC: ADAPTER_PUMP_PRICE, qty: 1, work: 0, equipF: ADAPTER_PUMP_PRICE, sum: ADAPTER_PUMP_PRICE }, false, true, 'e');
+      pushSemiRow('adapter_backflow_1', 'Обратный клапан 1" [шт.]', 'шт.', { equipC: SUMMER_BACKFLOW_1_INCH_DEFAULT, qty: 1, work: 0, equipF: SUMMER_BACKFLOW_1_INCH_DEFAULT, sum: SUMMER_BACKFLOW_1_INCH_DEFAULT }, false, true, 'e');
+      pushSemiRow('adapter_bronze_adapter', 'Адаптер 1" бронза [шт.]', 'шт.', { equipC: ADAPTER_BRONZE_ADAPTER_MAT, qty: 1, work: 0, equipF: ADAPTER_BRONZE_ADAPTER_MAT, sum: ADAPTER_BRONZE_ADAPTER_MAT }, false, true, 'e');
+      pushSemiRow('adapter_rope_m', 'Трос нержавеющий 3 мм [м]', 'м', { equipC: SUMMER_ROPE_PRICE_PER_M, qty: inclSPdf, work: 0, equipF: ropeSPdf, sum: ropeSPdf }, false, true, 'e');
+      pushSemiRow('adapter_rope_clamps', 'Зажимы для троса нерж. 3 мм', 'шт.', { equipC: clampSPdf, qty: 1, work: 0, equipF: clampSPdf, sum: clampSPdf }, false, true, 'e');
+      pushSemiRow('adapter_pipe_pnd32', 'Труба питьевая ПНД32, SDR 11 [м]', 'м', { equipC: SUMMER_PIPE_PND32_PRICE_PER_M, qty: inclSPdf, work: 0, equipF: pipeSPdf, sum: pipeSPdf }, false, true, 'e');
+      pushSemiRow('adapter_fittings_kit', 'Фитинги и запорная арматура [компл.]', 'компл.', { equipC: ADAPTER_FITTINGS_KIT, qty: 1, work: 0, equipF: ADAPTER_FITTINGS_KIT, sum: ADAPTER_FITTINGS_KIT }, false, true, 'e');
+      pushSemiRow('adapter_cap_vvs', 'Скважинная крышка VVSystems 133 [шт.]', 'шт.', { equipC: ADAPTER_CAP_VVS, qty: 1, work: 0, equipF: ADAPTER_CAP_VVS, sum: ADAPTER_CAP_VVS }, false, true, 'e');
+      pushSemiRow('adapter_consumables', 'Расходные материалы адаптер [компл.]', 'компл.', { equipC: ADAPTER_CONSUMABLES_SUM, qty: 1, work: 0, equipF: ADAPTER_CONSUMABLES_SUM, sum: ADAPTER_CONSUMABLES_SUM }, true, true, 'e');
+      rows.push(['Итого оборудование', '', '', '', fmt(sumEqSPdf)]);
+      rows.push(['МОНТАЖ', '', '', '', '']);
+      pushSemiRow('adapter_transport', 'Транспортные расходы', 'услуга', { equipC: null, qty: 1, work: ADAPTER_TRANSPORT_FIXED, equipF: ADAPTER_TRANSPORT_FIXED, sum: ADAPTER_TRANSPORT_FIXED }, true, true, 'm');
+      pushSemiRow('adapter_trench', 'Траншея (с материалом)', 'м.п.', { equipC: ADAPTER_TRENCH_PRICE_PER_M, qty: 0, work: 0, equipF: null, sum: null }, false, true, 'm');
+      pushSemiRow('adapter_mount_adapter', 'Монтаж адаптера [шт.]', 'шт.', { equipC: null, qty: 1, work: ADAPTER_MOUNT_ADAPTER_WORK, equipF: ADAPTER_MOUNT_ADAPTER_WORK, sum: ADAPTER_MOUNT_ADAPTER_WORK }, false, true, 'm');
+      pushSemiRow('adapter_mount_pump', 'Монтаж насоса [м]', 'м.п.', { equipC: null, qty: inclSPdf, work: SUMMER_MOUNT_PRICE_PER_M, equipF: mountSPdf, sum: mountSPdf }, false, true, 'm');
+      pushSemiRow('adapter_pnr', 'Распайка и пусконаладочные работы [шт.]', 'шт.', { equipC: null, qty: 1, work: ADAPTER_PNR_WORK, equipF: ADAPTER_PNR_WORK, sum: ADAPTER_PNR_WORK }, false, true, 'm');
+      rows.push(['Итого работы по монтажу', '', '', '', fmt(sumMoSPdf)]);
+      rows.push(['Всего за обустройство водоснабжения (полуадаптер)', '', '', '', fmt(sumEqSPdf + sumMoSPdf)]);
     } else if (state.arrangement === 'metal_caisson') {
       pushExcelRow('caisson_metal', 'Обустройство: Металлический кессон', 'услуга', { equipC: null, qty: 1, work: null, equipF: null, sum: ARRANGEMENT_PRICES.metal_caisson }, true, true);
     } else if (state.arrangement === 'plastic_caisson') {
@@ -4590,7 +4802,7 @@
 
     var bannerUrl = 'https://static.tildacdn.com/tild6463-6363-4661-b863-643263616431/photo.jpg';
     var wellName = !state.wellType ? 'не выбран' : (state.wellType === 'artesian' ? 'Артезианская скважина' : 'Скважина на песок');
-    var arrNames = { summer: 'Летний вариант', adapter: 'Скважинный адаптер', metal_caisson: 'Металлический кессон', plastic_caisson: 'Пластиковый кессон' };
+    var arrNames = { summer: 'Летний вариант', semi_adapter: 'Полуадаптер', adapter: 'Скважинный адаптер', metal_caisson: 'Металлический кессон', plastic_caisson: 'Пластиковый кессон' };
     var extraNames = {
       diamond_drilling: 'Алмазное бурение',
       hydrant_canada: 'Гидрант Канада незамерзающий',
