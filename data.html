@@ -1292,6 +1292,79 @@
     .buraktiv-configurator .materials-table .col-qty,
     .buraktiv-configurator .materials-table .col-price,
     .buraktiv-configurator .materials-table .col-sum { width: 96px; text-align: right; }
+    .buraktiv-configurator .materials-table .col-actions { width: 36px; text-align: center; }
+    .buraktiv-configurator .materials-table td.col-actions { padding-left: 0.2rem; padding-right: 0.2rem; }
+    .buraktiv-configurator .mat-row-remove-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .buraktiv-configurator .mat-row-remove-btn:hover {
+      background: rgba(148, 163, 184, 0.14);
+      border-color: rgba(148, 163, 184, 0.28);
+      color: #e2e8f0;
+    }
+    .buraktiv-configurator .mat-row-remove-btn:active { transform: translateY(1px); }
+    .buraktiv-configurator .materials-removed {
+      margin-top: 0.65rem;
+      padding: 0.65rem 0.7rem;
+      border: 1px dashed rgba(148, 163, 184, 0.35);
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.38);
+    }
+    .buraktiv-configurator .materials-removed-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 0.45rem;
+    }
+    .buraktiv-configurator .materials-removed-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .buraktiv-configurator .materials-removed-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      max-width: 100%;
+      padding: 0.38rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      background: rgba(30, 41, 59, 0.55);
+      color: #e2e8f0;
+      font-size: 0.72rem;
+      line-height: 1.1;
+    }
+    .buraktiv-configurator .materials-removed-chip-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 320px;
+    }
+    .buraktiv-configurator .materials-removed-undo {
+      border: 1px solid rgba(14, 165, 233, 0.35);
+      background: rgba(14, 165, 233, 0.12);
+      color: #7dd3fc;
+      font: inherit;
+      padding: 0.18rem 0.45rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      flex: 0 0 auto;
+    }
+    .buraktiv-configurator .materials-removed-undo:hover {
+      background: rgba(14, 165, 233, 0.2);
+      border-color: rgba(14, 165, 233, 0.5);
+    }
     .buraktiv-configurator .materials-table td.col-name { font-weight: 500; color: var(--text); }
     .buraktiv-configurator .materials-table td.col-unit { color: var(--text-muted); font-size: 0.68rem; }
     .buraktiv-configurator .materials-table .row-category td {
@@ -2205,12 +2278,17 @@
                 <th class="col-qty">Кол-во</th>
                 <th class="col-price">Цена</th>
                 <th class="col-sum">Сумма</th>
+                <th class="col-actions"></th>
               </tr>
             </thead>
             <tbody id="materials-tbody">
               
             </tbody>
           </table>
+          <div class="materials-removed" id="materials-removed" hidden>
+            <div class="materials-removed-title">Удалённые позиции (можно вернуть)</div>
+            <div class="materials-removed-list" id="materials-removed-list"></div>
+          </div>
           <p class="materials-foot-note">Точная стоимость зависит от геологии, глубины, заезда техники и доп. работ.</p>
         </div>
         </section>
@@ -2298,7 +2376,9 @@
     summerPumpKey: 'aquavita',
     summerMountMeters: 30,
     manualEdit: true,
-    manualOverrides: { cells: {} }
+    manualOverrides: { cells: {} },
+    hiddenRows: {},
+    removedRows: {}
   };
 
   function _manualMigrateIfNeeded() {
@@ -2489,7 +2569,86 @@
     }
     return { equipC: equipC, qty: qty, work: work, equipF: equipF, sum: sum };
   }
-  var MATERIALS_TABLE_COLS = 5;
+  var MATERIALS_TABLE_COLS = 6;
+  function _isRowHidden(rowId) {
+    return !!(rowId && state.hiddenRows && state.hiddenRows[rowId]);
+  }
+  function _removedTitleFromDomOrFallback(tr, rowId) {
+    if (tr) {
+      var td = tr.querySelector('.col-name');
+      if (td && td.textContent) return String(td.textContent).replace(/\s+/g, ' ').trim();
+    }
+    return rowId ? String(rowId) : 'Позиция';
+  }
+  function _renderRemovedRowsBar() {
+    var box = document.getElementById('materials-removed');
+    var list = document.getElementById('materials-removed-list');
+    if (!box || !list) return;
+    var ids = Object.keys(state.hiddenRows || {}).filter(function(k) { return !!state.hiddenRows[k]; });
+    if (!ids.length) {
+      box.hidden = true;
+      list.innerHTML = '';
+      return;
+    }
+    box.hidden = false;
+    list.innerHTML = ids.map(function(rowId) {
+      var meta = state.removedRows && state.removedRows[rowId] ? state.removedRows[rowId] : null;
+      var title = meta && meta.title ? meta.title : rowId;
+      var safe = String(title).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return (
+        '<span class="materials-removed-chip" data-removed-rowid="' + rowId + '">' +
+          '<span class="materials-removed-chip-name" title="' + safe + '">' + safe + '</span>' +
+          '<button type="button" class="materials-removed-undo" data-action="restore-row" data-rowid="' + rowId + '">Вернуть</button>' +
+        '</span>'
+      );
+    }).join('');
+  }
+  function removeMaterialsRow(rowId, fromTr) {
+    if (!rowId) return;
+    if (!state.removedRows) state.removedRows = {};
+    if (!state.hiddenRows) state.hiddenRows = {};
+    var prev =
+      (_manualGetCell(rowId, 'sum') != null ||
+        _manualGetCell(rowId, 'qty') != null ||
+        _manualGetCell(rowId, 'equipC') != null ||
+        _manualGetCell(rowId, 'work') != null ||
+        _manualGetCell(rowId, 'equipF') != null)
+        ? (state.manualOverrides && state.manualOverrides.cells && state.manualOverrides.cells[rowId]
+            ? Object.assign({}, state.manualOverrides.cells[rowId])
+            : null)
+        : null;
+    if (prev && !Object.keys(prev).length) prev = null;
+    if (!state.removedRows[rowId]) {
+      state.removedRows[rowId] = {
+        prev: prev,
+        title: _removedTitleFromDomOrFallback(fromTr, rowId)
+      };
+    }
+    state.hiddenRows[rowId] = true;
+    _manualSetCell(rowId, 'qty', 0);
+    _manualSetCell(rowId, 'sum', 0);
+    updateMaterialsTable(); updateDetail(); updateSummary();
+  }
+  function restoreMaterialsRow(rowId) {
+    if (!rowId) return;
+    if (state.hiddenRows) delete state.hiddenRows[rowId];
+    var meta = state.removedRows ? state.removedRows[rowId] : null;
+    if (meta && meta.prev && Object.keys(meta.prev).length) {
+      // restore previous overrides snapshot
+      if (!state.manualOverrides) state.manualOverrides = { cells: {} };
+      if (!state.manualOverrides.cells) state.manualOverrides.cells = {};
+      state.manualOverrides.cells[rowId] = Object.assign({}, meta.prev);
+    } else {
+      // restore defaults (remove overrides)
+      _manualSetCell(rowId, 'qty', undefined);
+      _manualSetCell(rowId, 'sum', undefined);
+      _manualSetCell(rowId, 'equipC', undefined);
+      _manualSetCell(rowId, 'work', undefined);
+      _manualSetCell(rowId, 'equipF', undefined);
+    }
+    if (state.removedRows) delete state.removedRows[rowId];
+    updateMaterialsTable(); updateDetail(); updateSummary();
+  }
   /** Текст колонки «Цена» (объединяет бывшие «Материалы» и «Работа»). */
   function materialsPriceCellText(r, rowId) {
     if (!r) return '—';
@@ -3478,6 +3637,7 @@
     }
     function row(rowId, name, unit, equipC0, qty0, work0, equipF0, sum0, isCategory, isTotal, nameIsHtml, fixedIfNoOverrides) {
       nameIsHtml = !!nameIsHtml;
+      if (!isCategory && !isTotal && rowId && _isRowHidden(rowId)) return;
       var tr = document.createElement('tr');
       if (isCategory) {
         tr.className = 'row-category';
@@ -3504,7 +3664,8 @@
           '<td class="col-unit"></td>' +
           '<td class="col-qty"></td>' +
           '<td class="col-price"></td>' +
-          '<td class="col-sum total-sum">' + (sum0 !== undefined && sum0 !== '' ? fmt(sum0) : '') + '</td>';
+          '<td class="col-sum total-sum">' + (sum0 !== undefined && sum0 !== '' ? fmt(sum0) : '') + '</td>' +
+          '<td class="col-actions"></td>';
       } else {
         var namePart = nameIsHtml ? name : name.replace(/</g, '&lt;');
         var base = {
@@ -3523,7 +3684,10 @@
           '<td class="col-unit">' + unit + '</td>' +
           '<td class="col-qty">' + (qty != null ? fmt(qty) : '') + '</td>' +
           '<td class="col-price">' + priceText + '</td>' +
-          '<td class="col-sum">' + (sumShown != null ? fmt(sumShown) : '') + '</td>';
+          '<td class="col-sum">' + (sumShown != null ? fmt(sumShown) : '') + '</td>' +
+          '<td class="col-actions">' +
+            '<button type="button" class="mat-row-remove-btn" data-action="remove-row" data-rowid="' + rowId + '" title="Убрать из сметы" aria-label="Убрать из сметы">×</button>' +
+          '</td>';
       }
       tbody.appendChild(tr);
       if (!isCategory && !isTotal && rowId && r) {
@@ -3567,7 +3731,8 @@
         '<td class="col-unit"></td>' +
         '<td class="col-qty"></td>' +
         '<td class="col-price"></td>' +
-        '<td class="col-sum total-sum">' + fmt(sumVal) + '</td>';
+        '<td class="col-sum total-sum">' + fmt(sumVal) + '</td>' +
+        '<td class="col-actions"></td>';
       tbody.appendChild(tr);
     }
     function appendSummerLoadPackNoteRow() {
@@ -3886,6 +4051,7 @@
     }
 
     row('total', 'Итого', '', '', '', '', '', totalAll, false, true);
+    _renderRemovedRowsBar();
   }
   function getMaterialsTableData() {
     var depth = getDepth();
@@ -3905,6 +4071,7 @@
       return fmt(n);
     }
     function pushExcelRow(rowId, name, unit, base, fixedIfNoOverrides, workDashWhenZero) {
+      if (_isRowHidden(rowId)) return;
       var r = _computeExcelRow(rowId, base, !!fixedIfNoOverrides);
       var sumN = r && r.sum != null ? Number(r.sum) : 0;
       if (!isNaN(sumN)) totalAll += sumN;
@@ -3985,6 +4152,7 @@
       var sumEqPdf = 0;
       var sumMoPdf = 0;
       function pushSummerRow(rowId, displayName, unit, base, fixedIfNoOverrides, workDashWhenZero, bucket) {
+        if (_isRowHidden(rowId)) return;
         var r = _computeExcelRow(rowId, base, !!fixedIfNoOverrides);
         var sumN = r && r.sum != null ? Number(r.sum) : 0;
         if (!isNaN(sumN)) {
@@ -4034,6 +4202,7 @@
       var sumEqAPdf = 0;
       var sumMoAPdf = 0;
       function pushAdapterRow(rowId, displayName, unit, base, fixedIfNoOverrides, workDashWhenZero, bucket) {
+        if (_isRowHidden(rowId)) return;
         var r = _computeExcelRow(rowId, base, !!fixedIfNoOverrides);
         var sumN = r && r.sum != null ? Number(r.sum) : 0;
         if (!isNaN(sumN)) {
@@ -4670,11 +4839,44 @@
     }
     function resetManualOverrides() {
       state.manualOverrides = { cells: {} };
+      state.hiddenRows = {};
+      state.removedRows = {};
       updateManualUi();
       updateMaterialsTable(); updateDetail(); updateSummary();
     }
     var manualResetBtn = document.getElementById('manual-edit-reset-btn');
     if (manualResetBtn) manualResetBtn.addEventListener('click', resetManualOverrides);
+    var tbody = document.getElementById('materials-tbody');
+    if (tbody) {
+      tbody.addEventListener('click', function(ev) {
+        var t = ev.target;
+        if (!t) return;
+        var btn = t.closest ? t.closest('[data-action]') : null;
+        if (!btn) return;
+        var action = btn.getAttribute('data-action');
+        var rowId = btn.getAttribute('data-rowid');
+        if (action === 'remove-row' && rowId) {
+          ev.preventDefault();
+          var tr = btn.closest ? btn.closest('tr') : null;
+          removeMaterialsRow(rowId, tr);
+        }
+      });
+    }
+    var removedBox = document.getElementById('materials-removed');
+    if (removedBox) {
+      removedBox.addEventListener('click', function(ev) {
+        var t = ev.target;
+        if (!t) return;
+        var btn = t.closest ? t.closest('[data-action]') : null;
+        if (!btn) return;
+        var action = btn.getAttribute('data-action');
+        var rowId = btn.getAttribute('data-rowid');
+        if (action === 'restore-row' && rowId) {
+          ev.preventDefault();
+          restoreMaterialsRow(rowId);
+        }
+      });
+    }
     updateManualUi();
     var mapOpenBtn = document.getElementById('map-depth-open-btn');
     var mapPopup = document.getElementById('map-popup-overlay');
