@@ -1,0 +1,3885 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <title>Дренаж, ливнёвка, отмостка — Бурактив</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #000; }
+
+    /* Те же токены и поведение, что у страницы скважины */
+    .buraktiv-configurator.dop-page {
+      --bg: #000000;
+      --bg-elevated: #2a2a2e;
+      --surface: #323238;
+      --surface-hover: #3d3d44;
+      --border: #4a4a52;
+      --border-soft: #35353a;
+      --control-bg: #26262b;
+      --text: #f0f2f5;
+      --text-muted: #8b92a0;
+      --text-soft: #6b7280;
+      --accent: #0ea5e9;
+      --accent-hover: #38bdf8;
+      --accent-soft: rgba(14, 165, 233, 0.15);
+      --accent-glow: rgba(14, 165, 233, 0.35);
+      --success: #22c55e;
+      --shadow: 0 8px 32px rgba(0,0,0,0.35);
+      --radius: 16px;
+      --radius-md: 12px;
+      --radius-sm: 10px;
+      --radius-pill: 999px;
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      padding: clamp(0.35rem, 1vw, 0.6rem) clamp(0.65rem, 1.5vw, 1.25rem);
+      box-sizing: border-box;
+      max-width: 100%;
+      line-height: 1.4;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+    }
+    .buraktiv-configurator.dop-page *,
+    .buraktiv-configurator.dop-page *::before,
+    .buraktiv-configurator.dop-page *::after { box-sizing: border-box; }
+
+    /* ——— Меню договоров ——— */
+    .contract-app-toolbar-wrap {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: 0.65rem;
+      padding: 0.35rem clamp(0.6rem, 1.5vw, 1rem) 0.75rem;
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 0.35rem;
+    }
+    .contract-app-toolbar-wrap > .contract-app-toolbar {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 0;
+      margin: 0;
+      border-bottom: none;
+    }
+    a.contract-app-toolbar-side-nav {
+      flex: 0 0 auto;
+      align-self: stretch;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.35rem;
+      max-width: 2.85rem;
+      padding: 0.45rem 0.3rem;
+      border: 1px solid rgba(34, 211, 238, 0.45);
+      border-radius: var(--radius-md);
+      background: rgba(34, 211, 238, 0.08);
+      color: #22d3ee;
+      font-weight: 800;
+      font-size: 0.7rem;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: background 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+    }
+    a.contract-app-toolbar-side-nav:hover {
+      background: rgba(34, 211, 238, 0.16);
+      border-color: rgba(34, 211, 238, 0.78);
+      filter: brightness(1.05);
+    }
+    .contract-app-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 1rem;
+      padding: 0.5rem 0 0.85rem;
+      margin-bottom: 0;
+    }
+    .contract-app-toolbar-btn {
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 0.45rem 1rem;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(14, 165, 233, 0.35);
+    }
+    a.contract-app-toolbar-btn {
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .contract-app-toolbar-btns {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem 0.65rem;
+    }
+    .contract-app-toolbar-btn--secondary {
+      background: linear-gradient(135deg, #059669, #047857);
+      box-shadow: 0 2px 12px rgba(5, 150, 105, 0.3);
+    }
+    .contract-app-toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem 0.65rem;
+    }
+    .contract-app-toolbar-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    .contract-app-toolbar-btn--yur {
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      box-shadow: 0 2px 12px rgba(124, 58, 237, 0.35);
+    }
+    .contract-app-toolbar-btn--secondary.contract-app-toolbar-btn--yur {
+      background: linear-gradient(135deg, #6366f1, #4338ca);
+      box-shadow: 0 2px 12px rgba(99, 102, 241, 0.35);
+    }
+    .contract-app-toolbar-btn--akt-fiz {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      box-shadow: 0 2px 12px rgba(217, 119, 6, 0.35);
+    }
+    .contract-app-toolbar-btn--akt-yur {
+      background: linear-gradient(135deg, #ea580c, #9a3412);
+      box-shadow: 0 2px 12px rgba(234, 88, 12, 0.35);
+    }
+    .contract-app-toolbar-btn--reset {
+      background: linear-gradient(135deg, #64748b, #475569);
+      box-shadow: 0 2px 12px rgba(100, 116, 139, 0.35);
+    }
+    .contract-app-toolbar-btn:hover { filter: brightness(1.06); }
+    a.dop-doc-placeholder {
+      cursor: default;
+      opacity: 0.82;
+    }
+    a.dop-doc-placeholder:hover { filter: brightness(1); }
+
+    /* ——— Сетка как у скважины: слева узкий блок колонок, справа широкая смета ——— */
+    .buraktiv-configurator.dop-page .config-layout {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: clamp(0.5rem, 1.2vw, 0.85rem);
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 clamp(0.6rem, 1.5vw, 1rem);
+      flex: 0 0 auto;
+      min-height: auto;
+      overflow: visible;
+    }
+    .buraktiv-configurator.dop-page .config-left-stack {
+      display: flex;
+      flex-direction: column;
+      flex: 0 1 auto;
+      width: clamp(480px, 58vw, 860px);
+      max-width: 100%;
+      min-width: 0;
+      gap: 0.45rem;
+    }
+    .buraktiv-configurator.dop-page .zone-center {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-width: 0;
+      flex: 1 1 360px;
+      max-width: 100%;
+      min-height: auto;
+      overflow: visible;
+    }
+
+    @media (max-width: 1650px) {
+      .buraktiv-configurator.dop-page .config-layout {
+        flex-direction: column;
+        align-items: stretch;
+        flex: none;
+      }
+      .buraktiv-configurator.dop-page .config-left-stack {
+        width: 100%;
+        max-width: none;
+      }
+      .buraktiv-configurator.dop-page .zone-center {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+      }
+    }
+
+    /* Три равные «узкие» колонки в одной сетке (без схемы), растягиваются по высоте */
+    .buraktiv-configurator.dop-page .config-columns.dop-config-columns {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: 1fr;
+      column-gap: 0.4rem;
+      row-gap: 0;
+      align-items: stretch;
+      flex: 0 0 auto;
+      min-height: clamp(320px, 58vh, 680px);
+      width: 100%;
+    }
+
+    .buraktiv-configurator.dop-page .dop-cfg-col {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      min-width: 0;
+      align-self: stretch;
+    }
+    .buraktiv-configurator.dop-page .dop-cfg-col--drain { border-left: 3px solid var(--accent); }
+    .buraktiv-configurator.dop-page .dop-cfg-col--storm { border-left: 3px solid #22d3ee; }
+    .buraktiv-configurator.dop-page .dop-cfg-col--apron { border-left: 3px solid #22c55e; }
+
+    .buraktiv-configurator.dop-page .dop-cfg-col-top {
+      flex: 0 0 auto;
+      padding: 0.2rem 0.35rem;
+      border-bottom: 1px solid var(--border-soft);
+      background: rgba(0,0,0,0.12);
+    }
+    .buraktiv-configurator.dop-page .dop-cfg-col-kicker {
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.15rem;
+    }
+    .buraktiv-configurator.dop-page .dop-cfg-col h2 {
+      margin: 0;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .buraktiv-configurator.dop-page .dop-cfg-col-body {
+      flex: 1 1 auto;
+      padding: 0.45rem 0.4rem 0.55rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      min-height: 0;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ——— Опросник дренажа ——— */
+    .drain-wizard { display: flex; flex-direction: column; gap: 0.45rem; }
+    .drain-wizard-step {
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      background: var(--control-bg);
+      padding: 0.4rem 0.45rem;
+    }
+    .drain-wizard-step.is-done { border-color: rgba(34, 197, 94, 0.35); }
+    .drain-wizard-step.is-active { border-color: rgba(14, 165, 233, 0.55); box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.2); }
+    .dop-cfg-col--apron .drain-wizard-step.is-active {
+      border-color: rgba(34, 197, 94, 0.55);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2);
+    }
+    .drain-wizard-step.is-pending { opacity: 0.55; pointer-events: none; }
+    .drain-wizard-q {
+      margin: 0 0 0.35rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .drain-wizard-ans {
+      margin: 0 0 0.3rem;
+      font-size: 0.65rem;
+      color: var(--success);
+      font-weight: 600;
+    }
+    .drain-wizard-opts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+    .drain-opt-btn {
+      font: inherit;
+      font-size: 0.65rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 0.28rem 0.55rem;
+      background: var(--surface);
+      color: var(--text);
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .drain-opt-btn:hover { background: var(--surface-hover); border-color: var(--accent); }
+    .drain-opt-btn.is-selected {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #bae6fd;
+      box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.25);
+    }
+    .drain-wizard-field { margin-top: 0.25rem; }
+    .drain-wizard-field label {
+      display: block;
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
+    .drain-wizard-field input[type="number"],
+    .drain-wizard-field input[type="text"] {
+      width: 100%;
+      max-width: 100%;
+      padding: 0.32rem 0.4rem;
+      font: inherit;
+      font-size: 0.68rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+    }
+    .drain-wizard-field input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+    .drain-wizard-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.35rem;
+    }
+    .drain-wizard-hint {
+      margin: 0.25rem 0 0;
+      font-size: 0.6rem;
+      color: var(--text-soft);
+      line-height: 1.35;
+    }
+    .drain-wizard-placeholder {
+      padding: 0.5rem;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .drain-wizard-reset {
+      align-self: flex-start;
+      font: inherit;
+      font-size: 0.62rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 0.25rem 0.55rem;
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .drain-wizard-reset:hover { color: var(--text); border-color: var(--text-muted); }
+
+    .buraktiv-configurator.dop-page .drain-col-body {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .buraktiv-configurator.dop-page .drain-extras-panel {
+      flex: 0 0 auto;
+      margin-top: 0.35rem;
+      padding: 0.45rem 0.4rem 0.5rem;
+      border-top: 1px solid var(--border-soft);
+      background: rgba(0, 0, 0, 0.18);
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    }
+    .buraktiv-configurator.dop-page .drain-extras-kicker {
+      margin: 0 0 0.4rem;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .buraktiv-configurator.dop-page .materials-table tr.row-section td {
+      background: rgba(14, 165, 233, 0.12);
+      font-weight: 700;
+      font-size: 0.65rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #7dd3fc;
+    }
+    .buraktiv-configurator.dop-page .materials-table tr.row-param td.col-name { color: var(--text); }
+    .buraktiv-configurator.dop-page .materials-table tr.row-param td.col-price,
+    .buraktiv-configurator.dop-page .materials-table tr.row-param td.col-sum {
+      color: var(--text-soft);
+      font-style: italic;
+    }
+
+    @media (max-width: 700px) {
+      .buraktiv-configurator.dop-page .config-columns.dop-config-columns {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        min-height: auto;
+      }
+      .buraktiv-configurator.dop-page .dop-cfg-col {
+        min-height: auto;
+      }
+    }
+
+    /* Блок сметы — как zone-materials на скважине */
+    .buraktiv-configurator.dop-page .zone-materials {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+      overflow: visible;
+      flex: 1 1 auto;
+      min-height: clamp(280px, 52vh, 900px);
+      display: flex;
+      flex-direction: column;
+    }
+    .buraktiv-configurator.dop-page .materials-header {
+      padding: 0.35rem 0.65rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .buraktiv-configurator.dop-page .materials-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 0.12rem;
+    }
+    .buraktiv-configurator.dop-page .materials-header-desc {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin: 0 0 0.35rem;
+      line-height: 1.3;
+    }
+    .buraktiv-configurator.dop-page .materials-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+    .buraktiv-configurator.dop-page .btn-download {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      border: 1px solid var(--border);
+      background: rgba(14, 165, 233, 0.15);
+      color: var(--text);
+      opacity: 1;
+    }
+    .buraktiv-configurator.dop-page .btn-download:hover:not(:disabled) {
+      background: rgba(14, 165, 233, 0.28);
+      border-color: var(--accent);
+    }
+    .buraktiv-configurator.dop-page .btn-download:disabled {
+      cursor: not-allowed;
+      opacity: 0.85;
+      background: rgba(148, 163, 184, 0.1);
+      color: var(--text-muted);
+    }
+    .buraktiv-configurator.dop-page .materials-section-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem 0.55rem;
+      margin: 0 0 0.55rem;
+      padding: 0.45rem 0.55rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.03) 0%, rgba(241, 245, 249, 0.08) 100%);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+    }
+    .buraktiv-configurator.dop-page .materials-legend-label {
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-right: 0.15rem;
+    }
+    .buraktiv-configurator.dop-page .materials-legend-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.45rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.58rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-family: inherit;
+      background: transparent;
+    }
+    .buraktiv-configurator.dop-page .materials-legend-chip.is-active {
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+    }
+    .buraktiv-configurator.dop-page .materials-legend-chip.is-locked,
+    .buraktiv-configurator.dop-page .materials-legend-chip:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .buraktiv-configurator.dop-page .dop-cfg-col--locked .dop-cfg-col-body {
+      opacity: 0.55;
+    }
+    .buraktiv-configurator.dop-page .dop-cfg-col--apron.dop-cfg-col--locked .dop-cfg-col-kicker::after {
+      content: ' · сначала дренаж';
+      font-weight: 400;
+      opacity: 0.85;
+    }
+    .buraktiv-configurator.dop-page .dop-cfg-col--storm.dop-cfg-col--locked .dop-cfg-col-kicker::after {
+      content: ' · сначала отмостка';
+      font-weight: 400;
+      opacity: 0.85;
+    }
+    .buraktiv-configurator.dop-page .materials-legend-chip--drain {
+      color: #075985;
+      background: rgba(14, 165, 233, 0.16);
+      border-color: rgba(14, 165, 233, 0.35);
+    }
+    .buraktiv-configurator.dop-page .materials-legend-chip--storm {
+      color: #0e7490;
+      background: rgba(34, 211, 238, 0.14);
+      border-color: rgba(34, 211, 238, 0.35);
+    }
+    .buraktiv-configurator.dop-page .materials-legend-chip--apron {
+      color: #166534;
+      background: rgba(34, 197, 94, 0.16);
+      border-color: rgba(34, 197, 94, 0.38);
+    }
+    .buraktiv-configurator.dop-page .materials-legend-sep { opacity: 0.45; padding: 0 0.15rem; }
+
+    .buraktiv-configurator.dop-page .materials-table-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-width: 100%;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 0.5rem 0.5rem;
+      background: #fff;
+      border-radius: 8px;
+      margin: 0 0.35rem 0.35rem;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel {
+      width: 100%;
+      min-width: 920px;
+      border-collapse: collapse;
+      font-size: 11px;
+      line-height: 1.35;
+      color: #000;
+      background: #fff;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel th,
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel th {
+      background: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: underline;
+      color: #000;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-name,
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-unit,
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-equip,
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-notes {
+      font-family: "Times New Roman", Times, serif;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-name {
+      min-width: 240px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-unit { width: 42px; }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-equip { width: 72px; }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-qty,
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-work,
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-work-total,
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-sum {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-qty { width: 52px; }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-work { width: 72px; }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-work-total { width: 82px; }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-sum { width: 72px; }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel .col-notes {
+      min-width: 120px;
+      text-align: left;
+      font-size: 10px;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel tr.row-section-title td.col-name {
+      color: #c00000;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel tr.row-section-title td.col-sum {
+      font-weight: 700;
+      color: #000;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel tr.smeta-internal-haul-summary td {
+      border-top: none;
+      padding-top: 0.25rem;
+      padding-bottom: 0.75rem;
+      font-size: 11px;
+      color: #475569;
+      text-align: left;
+      background: rgba(14, 165, 233, 0.06);
+    }
+    .buraktiv-configurator.dop-page .smeta-item-title {
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .buraktiv-configurator.dop-page .smeta-item-list {
+      margin: 0;
+      padding-left: 1.15rem;
+      font-size: 7px;
+      font-weight: 700;
+      font-style: italic;
+      line-height: 1.35;
+    }
+    .buraktiv-configurator.dop-page .smeta-item-list li { margin: 0 0 2px; }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel input.smeta-cell-input {
+      width: 100%;
+      max-width: 100%;
+      border: none;
+      background: transparent;
+      font: inherit;
+      font-size: 11px;
+      text-align: center;
+      color: #000;
+      padding: 2px;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel input.smeta-cell-input:focus {
+      outline: 1px solid #0ea5e9;
+      background: #f0f9ff;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel td.col-notes input.smeta-cell-input {
+      text-align: left;
+      font-size: 10px;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel td.col-notes.smeta-notes-bold input.smeta-cell-input {
+      font-weight: 700;
+    }
+    .buraktiv-configurator.dop-page .materials-table.smeta-excel tr.row-position0 td.col-sum {
+      color: #666;
+    }
+    .buraktiv-configurator.dop-page .btn-smeta-edit-toggle.is-active {
+      background: rgba(34, 197, 94, 0.35);
+      border-color: #22c55e;
+      color: #bbf7d0;
+    }
+    .buraktiv-configurator.dop-page .smeta-row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-bottom: 0.35rem;
+    }
+    .buraktiv-configurator.dop-page .smeta-row-btn {
+      font: inherit;
+      font-size: 9px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid #94a3b8;
+      border-radius: 4px;
+      padding: 0.15rem 0.4rem;
+      background: #f1f5f9;
+      color: #334155;
+    }
+    .buraktiv-configurator.dop-page .smeta-row-btn--hide {
+      border-color: #f59e0b;
+      color: #b45309;
+    }
+    .buraktiv-configurator.dop-page .smeta-row-btn--hide:hover {
+      background: #fef3c7;
+    }
+    .buraktiv-configurator.dop-page .smeta-hidden-wrap {
+      margin: 0.5rem 0.35rem 0.65rem;
+      padding: 0.45rem 0.55rem;
+      border: 1px dashed #f59e0b;
+      border-radius: 8px;
+      background: rgba(245, 158, 11, 0.08);
+    }
+    .buraktiv-configurator.dop-page .smeta-hidden-wrap.is-empty { display: none; }
+    .buraktiv-configurator.dop-page .smeta-hidden-title {
+      margin: 0 0 0.35rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #b45309;
+    }
+    .buraktiv-configurator.dop-page .smeta-hidden-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .buraktiv-configurator.dop-page .smeta-hidden-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.3rem 0;
+      border-top: 1px solid rgba(245, 158, 11, 0.25);
+      font-size: 0.68rem;
+      color: #334155;
+    }
+    .buraktiv-configurator.dop-page .smeta-hidden-list li:first-child { border-top: none; }
+    .buraktiv-configurator.dop-page .smeta-hidden-restore {
+      font: inherit;
+      font-size: 0.62rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid #22c55e;
+      border-radius: 4px;
+      padding: 0.2rem 0.45rem;
+      background: rgba(34, 197, 94, 0.12);
+      color: #16a34a;
+      white-space: nowrap;
+    }
+    .buraktiv-configurator.dop-page .smeta-inline-title {
+      width: 100%;
+      font-weight: 700;
+      margin-bottom: 4px;
+      text-align: left;
+    }
+    .buraktiv-configurator.dop-page .smeta-inline-bullets {
+      width: 100%;
+      min-height: 4.5em;
+      font-size: 10px;
+      line-height: 1.35;
+      text-align: left;
+      resize: vertical;
+    }
+    .buraktiv-configurator.dop-page .smeta-notes-input {
+      width: 100%;
+      min-height: 2.5em;
+      text-align: left;
+      font-size: 10px;
+      resize: vertical;
+    }
+    .buraktiv-configurator.dop-page .materials-table-wrap.smeta-edit-unlocked .smeta-cell-input {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+    }
+    .buraktiv-configurator.dop-page .materials-table-wrap.smeta-edit-unlocked .smeta-cell-input:focus {
+      outline: 2px solid #0ea5e9;
+      background: #f0f9ff;
+    }
+    .buraktiv-configurator.dop-page .materials-foot-note {
+      font-size: 0.6rem;
+      color: var(--text-soft);
+      line-height: 1.25;
+      margin: 0.3rem 0.5rem 0.4rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="buraktiv-configurator dop-page">
+    <div class="contract-app-toolbar-wrap">
+      <a class="contract-app-toolbar-side-nav" href="data.html" title="Вернуться к расчёту скважины">Назад</a>
+      <div class="contract-app-toolbar" role="region" aria-label="Договоры и акты — дренаж, ливнёвка, отмостка">
+        <div class="contract-app-toolbar-group" aria-label="Договор с физическим лицом">
+          <span class="contract-app-toolbar-label">Физ. лицо</span>
+          <div class="contract-app-toolbar-btns">
+            <a class="contract-app-toolbar-btn dop-doc-placeholder" href="#" title="Шаблон DOCX подключите позже">Договор генподряд Дренаж DOCX</a>
+            <a class="contract-app-toolbar-btn contract-app-toolbar-btn--secondary dop-doc-placeholder" href="#" title="Шаблон DOCX подключите позже">Договор подряда Ливнёвка и отмостка DOCX</a>
+          </div>
+        </div>
+        <div class="contract-app-toolbar-group" aria-label="Договор с юридическим лицом">
+          <span class="contract-app-toolbar-label">Юр. лицо</span>
+          <div class="contract-app-toolbar-btns">
+            <a class="contract-app-toolbar-btn contract-app-toolbar-btn--yur dop-doc-placeholder" href="#" title="Шаблон DOCX подключите позже">Договор генподряд Дренаж DOCX</a>
+            <a class="contract-app-toolbar-btn contract-app-toolbar-btn--secondary contract-app-toolbar-btn--yur dop-doc-placeholder" href="#" title="Шаблон DOCX подключите позже">Договор подряда Ливнёвка и отмостка DOCX</a>
+          </div>
+        </div>
+        <div class="contract-app-toolbar-group" aria-label="Акт выполненных работ">
+          <span class="contract-app-toolbar-label">Акт</span>
+          <div class="contract-app-toolbar-btns">
+            <a class="contract-app-toolbar-btn contract-app-toolbar-btn--akt-fiz dop-doc-placeholder" href="#" title="Шаблон DOCX подключите позже">Акт физ. лицо DOCX</a>
+            <a class="contract-app-toolbar-btn contract-app-toolbar-btn--akt-yur dop-doc-placeholder" href="#" title="Шаблон DOCX подключите позже">Акт юр. лицо DOCX</a>
+          </div>
+        </div>
+        <div class="contract-app-toolbar-group" aria-label="Сброс сметы">
+          <span class="contract-app-toolbar-label">Сброс</span>
+          <div class="contract-app-toolbar-btns">
+            <button type="button" class="contract-app-toolbar-btn contract-app-toolbar-btn--reset" id="dop-reset-all-btn" title="Очистить дренаж, отмостку, ливнёвку и смету">Сбросить</button>
+          </div>
+        </div>
+      </div>
+      <a class="contract-app-toolbar-side-nav contract-app-toolbar-side-nav--right" href="dop-zakupka.html" title="Отдел закупки">Закупка</a>
+    </div>
+
+    <div class="config-layout">
+      <div class="config-left-stack">
+        <div class="config-columns dop-config-columns">
+          <aside class="dop-cfg-col dop-cfg-col--drain" aria-labelledby="dop-title-drain">
+            <div class="dop-cfg-col-top">
+              <div class="dop-cfg-col-kicker">Колонка 1</div>
+              <h2 id="dop-title-drain">Дренаж</h2>
+            </div>
+            <div class="dop-cfg-col-body drain-col-body">
+              <div id="drain-wizard-root" aria-live="polite"></div>
+              <div class="drain-extras-panel" id="drain-extras-panel" aria-label="Дополнительные позиции сметы">
+                <p class="drain-extras-kicker">В смету в любой момент (метраж &gt; 0)</p>
+                <div class="drain-wizard-field">
+                  <label for="drain-cable-pnd">Кабель в ПНД (3×1,5), м</label>
+                  <input type="number" id="drain-cable-pnd" min="0" step="0.1" placeholder="0 — не включать" value="" data-drain-extra="cablePnDM" />
+                </div>
+                <div class="drain-wizard-field">
+                  <label for="drain-outlet-pipe">Труба ПНД 32 мм от насоса, м</label>
+                  <input type="number" id="drain-outlet-pipe" min="0" step="0.1" placeholder="0 — не включать" value="" data-drain-extra="outletPipe32M" />
+                </div>
+              </div>
+            </div>
+          </aside>
+          <aside class="dop-cfg-col dop-cfg-col--storm" aria-labelledby="dop-title-storm">
+            <div class="dop-cfg-col-top">
+              <div class="dop-cfg-col-kicker">Колонка 2</div>
+              <h2 id="dop-title-storm">Ливнёвка</h2>
+            </div>
+            <div class="dop-cfg-col-body" id="storm-wizard-root" aria-live="polite"></div>
+          </aside>
+          <aside class="dop-cfg-col dop-cfg-col--apron" aria-labelledby="dop-title-blind">
+            <div class="dop-cfg-col-top">
+              <div class="dop-cfg-col-kicker">Колонка 3</div>
+              <h2 id="dop-title-blind">Отмостка</h2>
+            </div>
+            <div class="dop-cfg-col-body" id="apron-wizard-root" aria-live="polite"></div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="zone-center">
+        <section class="zone-materials" aria-label="Перечень работ и материалов">
+          <div class="materials-header">
+            <h3 class="materials-title">Перечень работ и материалов</h3>
+            <p class="materials-header-desc">Общая смета: сверху <strong>дренаж</strong>, ниже <strong>отмостка</strong>, затем <strong>ливнёвка</strong>. Настраивать колонки можно в любом порядке. PDF/Excel — вся смета.</p>
+            <div class="materials-header-actions">
+              <button type="button" class="btn-download btn-smeta-edit-toggle" id="smeta-edit-toggle" title="Включите, чтобы менять текст и цифры прямо в таблице">Режим правки</button>
+              <button type="button" class="btn-download" id="materials-download-btn">Скачать смету PDF</button>
+              <button type="button" class="btn-download" id="materials-excel-btn" title="Скачать смету в Excel (.xlsx)">Скачать Excel</button>
+              <button type="button" class="btn-download" disabled title="Позже">Текст КП</button>
+            </div>
+          </div>
+          <div class="materials-section-legend" aria-label="Прокрутка к разделу сметы">
+            <span class="materials-legend-label">Перейти к</span>
+            <button type="button" class="materials-legend-chip materials-legend-chip--drain" data-smeta-section="drain">Дренаж</button>
+            <span class="materials-legend-sep">·</span>
+            <button type="button" class="materials-legend-chip materials-legend-chip--apron" data-smeta-section="apron">Отмостка</button>
+            <span class="materials-legend-sep">·</span>
+            <button type="button" class="materials-legend-chip materials-legend-chip--storm" data-smeta-section="storm">Ливнёвка</button>
+          </div>
+          <div class="materials-table-wrap" id="materials-table-wrap">
+            <table class="materials-table smeta-excel" aria-label="Смета">
+              <thead>
+                <tr>
+                  <th class="col-name">Перечень работ и материалов</th>
+                  <th class="col-unit">Ед. Изм.</th>
+                  <th class="col-equip">Стоимость обор-ия</th>
+                  <th class="col-qty">Кол-во</th>
+                  <th class="col-work">Стоимость работ</th>
+                  <th class="col-work-total">Стоимость работ с обор-ем</th>
+                  <th class="col-sum">Сумма в руб. РФ</th>
+                  <th class="col-notes">Примечания</th>
+                </tr>
+              </thead>
+              <tbody id="materials-tbody"></tbody>
+            </table>
+            <p class="materials-foot-note" id="materials-foot-note" style="color:#333;padding:0 0.35rem">«Режим правки» — правки в таблице. «Скрыть» — убрать из сметы и PDF (восстановить ниже). Заполнение сохраняется на устройстве — кнопка «Сбросить» вверху очищает всё. PDF/Excel нужен интернет.</p>
+            <div id="smeta-hidden-wrap" class="smeta-hidden-wrap is-empty" aria-live="polite">
+              <p class="smeta-hidden-title">Скрытые позиции (только для вас — в PDF клиенту не попадают)</p>
+              <ul id="smeta-hidden-list" class="smeta-hidden-list"></ul>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      window.addEventListener('error', function (e) {
+        try {
+          var msg = (e && e.message) ? String(e.message) : 'Неизвестная ошибка';
+          var fn = (e && e.filename) ? String(e.filename) : '';
+          var ln = (e && e.lineno) ? String(e.lineno) : '';
+          alert('Ошибка в калькуляторе: ' + msg + (fn ? ('\n' + fn + (ln ? (':' + ln) : '')) : ''));
+        } catch (err) {}
+      });
+
+      var DOP_STORAGE_KEY = 'buraktiv-dop-drainage-v1';
+      var saveDopTimer = null;
+
+      document.querySelectorAll('a.dop-doc-placeholder').forEach(function (a) {
+        a.addEventListener('click', function (e) { e.preventDefault(); });
+      });
+
+      var LABELS = {
+        drainType: {
+          soft_rock: 'Soft Rock',
+          classic_05_1: 'Классика 0,5–1 м',
+          classic_to_2: 'Классика до 2 м'
+        },
+        outfallType: { concrete: 'Бетонный', plastic: 'Пластиковый' }
+      };
+
+      var state = {
+        perimeterMode: 'direct',
+        perimeterM: '',
+        houseLengthM: '',
+        houseWidthM: '',
+        drainType: null,
+        inspectionWells: '',
+        houseToWellM: '',
+        outfallType: null,
+        outfallSize: null,
+        pump: null,
+        haulSand: null,
+        cablePnDM: '',
+        outletPipe32M: ''
+      };
+
+      var root = document.getElementById('drain-wizard-root');
+      var tbody = document.getElementById('materials-tbody');
+
+      function numVal(s) {
+        var n = parseFloat(String(s || '').replace(',', '.'));
+        return isNaN(n) ? null : n;
+      }
+
+      function perimeterMeters() {
+        if (state.perimeterMode === 'dimensions') {
+          var l = numVal(state.houseLengthM);
+          var w = numVal(state.houseWidthM);
+          if (l == null || w == null || l <= 0 || w <= 0) return null;
+          return Math.round(2 * (l + w) * 10) / 10;
+        }
+        var p = numVal(state.perimeterM);
+        return p != null && p > 0 ? p : null;
+      }
+
+      function inspectionWellsExtraMeters(wellCount) {
+        var n = Math.floor(wellCount);
+        if (n <= 0) return 0;
+        if (n <= 4) return n * 1;
+        return 4 + (n - 4) * 1.5;
+      }
+
+      function drainTotalsReady() {
+        return perimeterMeters() != null && !!state.drainType;
+      }
+
+      function effectiveDrainLengthM() {
+        var base = perimeterMeters();
+        if (base == null) return null;
+        var wellsRaw = numVal(state.inspectionWells);
+        var wells = (wellsRaw != null && wellsRaw >= 0) ? wellsRaw : 0;
+        var toWellRaw = numVal(state.houseToWellM);
+        var toWell = (toWellRaw != null && toWellRaw >= 0) ? toWellRaw : 0;
+        var wellExtra = inspectionWellsExtraMeters(wells);
+        return Math.round((base + wellExtra + toWell) * 10) / 10;
+      }
+
+      function effectiveDrainLengthHint() {
+        var total = effectiveDrainLengthM();
+        if (total == null) return '';
+        var base = perimeterMeters();
+        var wells = numVal(state.inspectionWells);
+        var toWell = numVal(state.houseToWellM) || 0;
+        var wellExtra = inspectionWellsExtraMeters(wells);
+        var wellPart = '';
+        if (wells > 0) {
+          if (wells <= 4) {
+            wellPart = ' + ' + wells + '×1 м (колодцы)';
+          } else {
+            wellPart = ' + 4×1 м + ' + (wells - 4) + '×1,5 м (колодцы св. 4)';
+          }
+        }
+        var runPart = toWell > 0 ? ' + ' + toWell + ' м (от дома к колодцу)' : '';
+        return 'Итого дренаж: ' + total + ' м.п. (' + base + ' м периметр' + wellPart + runPart + ')';
+      }
+
+      function isFoundationStepDone(stepId) {
+        switch (stepId) {
+          case 'perimeter': return perimeterMeters() != null;
+          case 'drainType': return !!state.drainType;
+          case 'inspectionWells': return numVal(state.inspectionWells) != null && numVal(state.inspectionWells) >= 0;
+          case 'houseToWell': return numVal(state.houseToWellM) != null && numVal(state.houseToWellM) >= 0;
+          case 'outfallType': return !!state.outfallType;
+          case 'outfallSize': return state.outfallSize != null;
+          case 'haulSand': return !!state.haulSand;
+          case 'pump': return !!state.pump;
+          default: return false;
+        }
+      }
+
+      function nextFoundationStepId() {
+        var order = ['perimeter', 'drainType', 'inspectionWells', 'houseToWell', 'haulSand', 'outfallType', 'outfallSize', 'pump'];
+        for (var i = 0; i < order.length; i++) {
+          if (!isFoundationStepDone(order[i])) return order[i];
+        }
+        return null;
+      }
+
+      function stepClass(stepId) {
+        return isFoundationStepDone(stepId) ? 'is-done' : 'is-active';
+      }
+
+      function optBtn(group, value, label, selected) {
+        return '<button type="button" class="drain-opt-btn' + (selected ? ' is-selected' : '') +
+          '" data-drain-set="' + group + '" data-drain-value="' + value + '">' + label + '</button>';
+      }
+
+      function renderPerimeterStep() {
+        var cls = stepClass('perimeter');
+        var p = perimeterMeters();
+        var html = '<div class="drain-wizard-step ' + cls + '" data-step="perimeter">' +
+          '<p class="drain-wizard-q">Какой периметр дома?</p>';
+        if (p != null) html += '<p class="drain-wizard-ans">' + p + ' м</p>';
+        html += '<div class="drain-wizard-opts" style="margin-bottom:0.35rem">' +
+          optBtn('perimeterMode', 'direct', 'Периметром', state.perimeterMode === 'direct') +
+          optBtn('perimeterMode', 'dimensions', 'Длина × ширина', state.perimeterMode === 'dimensions') +
+          '</div>';
+        if (state.perimeterMode === 'direct') {
+          html += '<div class="drain-wizard-field">' +
+            '<label for="drain-perimeter">Периметр, м</label>' +
+            '<input type="number" id="drain-perimeter" min="0" step="0.1" placeholder="Например: 48" value="' +
+            (state.perimeterM || '') + '" data-drain-input="perimeterM" />' +
+            '</div>';
+        } else {
+          html += '<div class="drain-wizard-row-2">' +
+            '<div class="drain-wizard-field"><label for="drain-len">Длина, м</label>' +
+            '<input type="number" id="drain-len" min="0" step="0.1" value="' + (state.houseLengthM || '') +
+            '" data-drain-input="houseLengthM" /></div>' +
+            '<div class="drain-wizard-field"><label for="drain-wid">Ширина, м</label>' +
+            '<input type="number" id="drain-wid" min="0" step="0.1" value="' + (state.houseWidthM || '') +
+            '" data-drain-input="houseWidthM" /></div></div>' +
+            '<p class="drain-wizard-hint">Периметр считается: 2 × (длина + ширина).</p>';
+        }
+        html += '</div>';
+        return html;
+      }
+
+      function renderDrainTypeStep() {
+        var cls = stepClass('drainType');
+        var ans = state.drainType ? LABELS.drainType[state.drainType] : '';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-step="drainType">' +
+          '<p class="drain-wizard-q">Какой дренаж?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        html += '<div class="drain-wizard-opts">' +
+          optBtn('drainType', 'soft_rock', 'Soft Rock', state.drainType === 'soft_rock') +
+          optBtn('drainType', 'classic_05_1', 'Классика 0,5–1 м', state.drainType === 'classic_05_1') +
+          optBtn('drainType', 'classic_to_2', 'Классика до 2 м', state.drainType === 'classic_to_2') +
+          '</div></div>';
+        return html;
+      }
+
+      function renderInspectionStep() {
+        var cls = stepClass('inspectionWells');
+        var n = numVal(state.inspectionWells);
+        var html = '<div class="drain-wizard-step ' + cls + '" data-step="inspectionWells">' +
+          '<p class="drain-wizard-q">Сколько смотровых / ревизионных колодцев?</p>';
+        if (n != null) html += '<p class="drain-wizard-ans">' + n + ' шт.</p>';
+        html += '<div class="drain-wizard-field">' +
+          '<label for="drain-inspection">Количество, шт.</label>' +
+          '<input type="number" id="drain-inspection" min="0" step="1" placeholder="0" value="' +
+          (state.inspectionWells !== '' ? state.inspectionWells : '') + '" data-drain-input="inspectionWells" />' +
+          '</div>';
+        html += '<p class="drain-wizard-hint">К дренажу: 1–4 колодца — по +1 м к периметру каждый; с 5-го — по +1,5 м. Без колодцев — 0.</p>';
+        html += '</div>';
+        return html;
+      }
+
+      function renderHouseToWellStep() {
+        var cls = stepClass('houseToWell');
+        var m = numVal(state.houseToWellM);
+        var html = '<div class="drain-wizard-step ' + cls + '" data-step="houseToWell">' +
+          '<p class="drain-wizard-q">Сколько от дома к колодцу метров?</p>';
+        if (m != null) html += '<p class="drain-wizard-ans">' + m + ' м</p>';
+        html += '<div class="drain-wizard-field">' +
+          '<label for="drain-house-to-well">Метраж до колодца сброса, м</label>' +
+          '<input type="number" id="drain-house-to-well" min="0" step="0.1" placeholder="Например: 15" value="' +
+          (state.houseToWellM !== '' ? state.houseToWellM : '') + '" data-drain-input="houseToWellM" />' +
+          '</div>';
+        html += '<p class="drain-wizard-hint">Добавляется к периметру и колодцам — участок дренажа от дома к колодцу (часто 10–20 м).</p>';
+        if (effectiveDrainLengthM() != null) {
+          html += '<p class="drain-wizard-hint" style="color:var(--success)">' + effectiveDrainLengthHint() + '</p>';
+        }
+        html += '</div>';
+        return html;
+      }
+
+      function renderOutfallTypeStep() {
+        var cls = stepClass('outfallType');
+        var ans = state.outfallType ? LABELS.outfallType[state.outfallType] : '';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-step="outfallType">' +
+          '<p class="drain-wizard-q">Колодец для сброса дренажа?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        html += '<div class="drain-wizard-opts">' +
+          optBtn('outfallType', 'concrete', 'Бетонный', state.outfallType === 'concrete') +
+          optBtn('outfallType', 'plastic', 'Пластиковый', state.outfallType === 'plastic') +
+          '</div></div>';
+        return html;
+      }
+
+      function renderOutfallSizeStep() {
+        if (!state.outfallType) return '';
+        var cls = stepClass('outfallSize');
+        var unit = state.outfallType === 'concrete' ? 'колец' : 'м';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-step="outfallSize">' +
+          '<p class="drain-wizard-q">' + (state.outfallType === 'concrete'
+            ? 'Сколько колец у бетонного колодца?'
+            : 'Сколько метров пластикового колодца?') + '</p>';
+        if (state.outfallSize != null) {
+          html += '<p class="drain-wizard-ans">' + state.outfallSize + ' ' + unit + '</p>';
+        }
+        html += '<div class="drain-wizard-opts">' +
+          optBtn('outfallSize', '1', '1', state.outfallSize === 1) +
+          optBtn('outfallSize', '2', '2', state.outfallSize === 2) +
+          optBtn('outfallSize', '3', '3', state.outfallSize === 3) +
+          '</div></div>';
+        return html;
+      }
+
+      function calcApronHaulParts() {
+        var p = apronPerimeterMeters ? apronPerimeterMeters() : null;
+        if (p == null || !apronState || !apronState.coating) return { sand: 0, gravel: 0, finish: 0, concrete: 0, total: 0, width: 1 };
+
+        var wRaw = numVal(apronState.stripWidthM);
+        // По умолчанию считаем как будто ширина 1 м (любой ввод <= 1 м не меняет расчёт)
+        var w = (wRaw != null && wRaw > 1) ? wRaw : 1;
+
+        function r1(x) { return Math.round(x * 10) / 10; }
+
+        if (apronState.coating === 'soft') {
+          var sand = r1(p * w * 0.10);
+          var gravel = r1(p * w * 0.15);
+          var finish = apronState.finish === 'yes' ? r1(p * w * 0.05) : 0;
+          return { sand: sand, gravel: gravel, finish: finish, concrete: 0, total: r1(sand + gravel + finish), width: w };
+        }
+
+        // Твёрдая (бетон): песок 0.12, щебень 0.08, бетон 0.10
+        var sand2 = r1(p * w * 0.12);
+        var gravel2 = r1(p * w * 0.08);
+        var concrete2 = r1(p * w * 0.10);
+        return { sand: sand2, gravel: gravel2, finish: 0, concrete: concrete2, total: r1(sand2 + gravel2), width: w };
+      }
+
+      function calcDrainHaulParts() {
+        var length = effectiveDrainLengthM();
+        if (length == null || length <= 0 || !state.drainType) return null;
+        var sand = 0;
+        var gravel = 0;
+        if (state.drainType === 'soft_rock') {
+          sand = Math.ceil(length * 0.3 * 0.3);
+        } else if (state.drainType === 'classic_05_1' || state.drainType === 'classic_to_2') {
+          sand = Math.floor(length * 0.2 * 0.3) + 1;
+          gravel = Math.ceil(length * 0.3 * 0.3);
+        } else {
+          return null;
+        }
+        return {
+          length: length,
+          sand: sand,
+          gravel: gravel,
+          total: sand + gravel
+        };
+      }
+
+      function calcHaulVolumeM3() {
+        var drain = calcDrainHaulParts();
+        if (!drain) return null;
+        var sand = drain.sand;
+        var gravel = drain.gravel;
+        return {
+          length: drain.length,
+          sand: sand,
+          gravel: gravel,
+          drainSand: drain.sand,
+          drainGravel: drain.gravel,
+          apronSand: 0,
+          apronGravel: 0,
+          total: sand + gravel
+        };
+      }
+
+      function ceilHaulM3(v) {
+        if (v == null || v <= 0) return 0;
+        var n = parseFloat(String(v).replace(',', '.'));
+        if (isNaN(n) || n <= 0) return 0;
+        return Math.ceil(Math.round(n * 1000) / 1000);
+      }
+
+      function haulBreakdownHint(parts) {
+        if (!parts) return '';
+        var bits = [];
+        if (parts.drainSand > 0) bits.push('песок (дренаж) ~' + parts.drainSand + ' м³');
+        if (parts.drainGravel > 0) bits.push('щебень (дренаж) ~' + parts.drainGravel + ' м³');
+        return bits.join(' · ') + ' → в подвоз ' + ceilHaulM3(parts.total) + ' м³';
+      }
+
+      function apronHaulBreakdownHint(parts) {
+        if (!parts || !apronState || !apronState.coating) return '';
+        var bits = [];
+        if (parts.sand > 0) bits.push('песок ~' + parts.sand + ' м³');
+        if (parts.gravel > 0) bits.push('щебень ~' + parts.gravel + ' м³');
+        if (parts.finish > 0) bits.push('финиш ~' + parts.finish + ' м³');
+        if (apronState.coating === 'concrete' && parts.concrete > 0) {
+          bits.push('бетон ~' + parts.concrete + ' м³ → заказ ' + ceilHaulM3(parts.concrete) + ' м³');
+        }
+        var w = parts.width && parts.width > 1 ? parts.width : 1;
+        var wNote = w > 1 ? (' (ширина ' + w + ' м)') : ' (ширина считается 1 м)';
+        return bits.join(' · ') + wNote + ' → в подвоз ' + ceilHaulM3(parts.total) + ' м³';
+      }
+
+      var HAUL_STD_NOTE =
+        'В стандартную стоимость входит подвоз до 50 м от места выгрузки. Расстояние более 50 м — отдельное согласование.';
+
+      function haulDefaultNotes() {
+        return HAUL_STD_NOTE;
+      }
+
+      function renderHaulSandStep() {
+        var cls = stepClass('haulSand');
+        var ans = state.haulSand === 'yes' ? 'Да, в смете' : (state.haulSand === 'no' ? 'Нет' : '');
+        var parts = calcHaulVolumeM3();
+        var html = '<div class="drain-wizard-step ' + cls + '" data-step="haulSand">' +
+          '<p class="drain-wizard-q">Включить подвоз песка и щебня вручную?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        if (effectiveDrainLengthM() != null) {
+          html += '<p class="drain-wizard-hint">' + effectiveDrainLengthHint() + '</p>';
+        }
+        html += '<div class="drain-wizard-opts">' +
+          optBtn('haulSand', 'yes', 'Да', state.haulSand === 'yes') +
+          optBtn('haulSand', 'no', 'Нет', state.haulSand === 'no') +
+          '</div>';
+        if (parts) {
+          html += '<p class="drain-wizard-hint">' + haulBreakdownHint(parts) +
+            '<br><span style="opacity:0.85">В строки «Песок» и «Щебень» объём не пишем — только в «Подвоз».</span></p>';
+        }
+        html += '</div>';
+        return html;
+      }
+
+      function renderPumpStep() {
+        var cls = stepClass('pump');
+        var ans = state.pump ? (state.pump === 'yes' ? 'Да' : 'Нет') : '';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-step="pump">' +
+          '<p class="drain-wizard-q">Нужен дренажный насос?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        html += '<div class="drain-wizard-opts">' +
+          optBtn('pump', 'yes', 'Да', state.pump === 'yes') +
+          optBtn('pump', 'no', 'Нет', state.pump === 'no') +
+          '</div></div>';
+        return html;
+      }
+
+      function syncDrainExtrasInputs() {
+        var panel = document.getElementById('drain-extras-panel');
+        if (!panel) return;
+        panel.querySelectorAll('[data-drain-extra]').forEach(function (inp) {
+          var key = inp.getAttribute('data-drain-extra');
+          inp.value = state[key] !== '' && state[key] != null ? state[key] : '';
+        });
+      }
+
+      function bindDrainExtrasPanel() {
+        var panel = document.getElementById('drain-extras-panel');
+        if (!panel || panel.getAttribute('data-bound') === '1') return;
+        panel.setAttribute('data-bound', '1');
+        panel.querySelectorAll('[data-drain-extra]').forEach(function (inp) {
+          inp.addEventListener('input', function () {
+            state[inp.getAttribute('data-drain-extra')] = inp.value;
+            activateSmetaSection('drain');
+            refreshSmeta();
+          });
+        });
+      }
+
+      function apronWizardComplete() {
+        if (!apronState.coating || apronState.demolition == null) return false;
+        if (apronState.coating === 'concrete') return apronState.insulation != null;
+        return true;
+      }
+
+      function smetaSectionShownInTable(sk) {
+        return sectionHasTableBlock(sk);
+      }
+
+      function sectionHasTableBlock(sk) {
+        if (!sectionHasUserInput(sk)) return false;
+        var sec = smetaState.sections[sk];
+        return getVisibleRowKeys(sk).some(function (key) {
+          return sec[key] && !sec[key].hidden;
+        });
+      }
+
+      function smetaHasAnyContent() {
+        return SMETA_SECTIONS.some(function (sk) { return sectionHasTableBlock(sk); });
+      }
+
+      function combinedSmetaTotal() {
+        var total = 0;
+        SMETA_SECTIONS.forEach(function (sk) {
+          if (sectionHasTableBlock(sk)) total += sectionTotal(sk);
+        });
+        return total;
+      }
+
+      function updateSmetaSectionChips() {
+        document.querySelectorAll('[data-smeta-section]').forEach(function (btn) {
+          var sk = btn.getAttribute('data-smeta-section');
+          btn.disabled = false;
+          btn.classList.remove('is-locked');
+          btn.removeAttribute('title');
+          btn.classList.toggle('is-active', sk === smetaState.activeSection);
+          btn.classList.toggle('has-content', sectionHasTableBlock(sk));
+        });
+      }
+
+      function scrollToSmetaSection(sk) {
+        if (!tbody) return;
+        var anchor = tbody.querySelector('[data-smeta-sec-anchor="' + sk + '"]');
+        if (anchor && anchor.scrollIntoView) {
+          anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+
+      function saveDopPortableState() {
+        try {
+          localStorage.setItem(DOP_STORAGE_KEY, JSON.stringify({
+            state: state,
+            apronState: apronState,
+            stormState: stormState,
+            smeta: {
+              primarySection: smetaState.primarySection,
+              activeSection: smetaState.activeSection,
+              editMode: smetaState.editMode,
+              sections: smetaState.sections
+            }
+          }));
+        } catch (e) {}
+      }
+
+      function scheduleSaveDopPortableState() {
+        if (saveDopTimer) clearTimeout(saveDopTimer);
+        saveDopTimer = setTimeout(saveDopPortableState, 350);
+      }
+
+      function restoreDopPortableState() {
+        try {
+          var raw = localStorage.getItem(DOP_STORAGE_KEY);
+          if (!raw) return;
+          var data = JSON.parse(raw);
+          if (data.state) Object.assign(state, data.state);
+          if (data.apronState) Object.assign(apronState, data.apronState);
+          if (data.stormState) Object.assign(stormState, data.stormState);
+          if (!data.smeta) return;
+          if (data.smeta.primarySection != null) smetaState.primarySection = data.smeta.primarySection;
+          if (data.smeta.activeSection != null) smetaState.activeSection = data.smeta.activeSection;
+          if (data.smeta.editMode != null) smetaState.editMode = data.smeta.editMode;
+          if (data.smeta.sections) {
+            ['drain', 'storm', 'apron'].forEach(function (sk) {
+              var savedSec = data.smeta.sections[sk];
+              if (!savedSec) return;
+              Object.keys(savedSec).forEach(function (key) {
+                if (smetaState.sections[sk][key]) {
+                  Object.assign(smetaState.sections[sk][key], savedSec[key]);
+                }
+              });
+            });
+          }
+        } catch (e) {}
+      }
+
+      function refreshSmeta() {
+        syncDrainSoftrockQty();
+        syncApronQty();
+        syncAllHaulSandRows();
+        syncApronConcreteQty();
+        syncStormQty();
+        renderSmetaTable();
+        scheduleSaveDopPortableState();
+      }
+
+      function sandHaulActiveInDrain() {
+        return state.haulSand === 'yes';
+      }
+
+      function sandHaulActiveInApron() {
+        return apronState.haulSand === 'yes';
+      }
+
+      function sandHaulMerged() {
+        return sandHaulActiveInDrain() && sandHaulActiveInApron();
+      }
+
+      function calcActiveHaulSummary() {
+        var sand = 0;
+        var gravel = 0;
+        var haulTotalRaw = 0;
+        var active = false;
+        if (sandHaulActiveInDrain()) {
+          var d = calcDrainHaulParts();
+          if (d && d.total > 0) {
+            sand += d.sand || 0;
+            gravel += d.gravel || 0;
+            haulTotalRaw += d.total;
+            active = true;
+          }
+        }
+        if (sandHaulActiveInApron()) {
+          var a = calcApronHaulParts();
+          if (a && a.total > 0) {
+            sand += a.sand || 0;
+            gravel += a.gravel || 0;
+            haulTotalRaw += a.total;
+            active = true;
+          }
+        }
+        if (!active || haulTotalRaw <= 0) return null;
+        return {
+          sand: ceilHaulM3(sand),
+          gravel: ceilHaulM3(gravel),
+          haulQty: ceilHaulM3(haulTotalRaw)
+        };
+      }
+
+      function syncAllHaulSandRows() {
+        var summary = calcActiveHaulSummary();
+        if (!summary) return;
+        var drainRow = smetaState.sections.drain && smetaState.sections.drain.sandHaul;
+        var apronRow = smetaState.sections.apron && smetaState.sections.apron.sandHaul;
+        if (sandHaulActiveInDrain()) {
+          if (drainRow) {
+            drainRow.qty = String(summary.haulQty);
+            drainRow.notes = HAUL_STD_NOTE;
+          }
+        } else if (sandHaulActiveInApron() && apronRow) {
+          apronRow.qty = String(summary.haulQty);
+          apronRow.notes = HAUL_STD_NOTE;
+        }
+      }
+
+      function syncedHaulQty() {
+        var summary = calcActiveHaulSummary();
+        return summary && summary.haulQty > 0 ? summary.haulQty : null;
+      }
+
+      function syncedConcreteQty() {
+        if (apronState.coating !== 'concrete') return null;
+        var parts = calcApronHaulParts();
+        if (!parts || parts.concrete == null || parts.concrete <= 0) return null;
+        return ceilHaulM3(parts.concrete);
+      }
+
+      function smetaRowQtyDisplay(sectionKey, rowKey, row) {
+        if (rowKey === 'sandHaul' && shouldShowSmetaRow(sectionKey, rowKey)) {
+          var hq = syncedHaulQty();
+          if (hq != null) return String(hq);
+        }
+        if (rowKey === 'concrete' && shouldShowSmetaRow(sectionKey, rowKey)) {
+          var cq = syncedConcreteQty();
+          if (cq != null) return String(cq);
+        }
+        return row.qty != null && row.qty !== '' ? String(row.qty) : '';
+      }
+
+      function smetaHaulSummaryText() {
+        var summary = calcActiveHaulSummary();
+        var bits = [];
+        if (summary) {
+          if (summary.sand > 0) bits.push('песок — ' + summary.sand + ' м³');
+          if (summary.gravel > 0) bits.push('щебень — ' + summary.gravel + ' м³');
+        }
+        var cq = syncedConcreteQty();
+        if (cq != null) bits.push('бетон — ' + cq + ' м³');
+        if (!bits.length) return '';
+        var text = 'Для заказа (округление вверх): ' + bits.join(', ') + '.';
+        if (summary && summary.haulQty > 0) {
+          text += ' Подвоз в смете: ' + summary.haulQty + ' м³.';
+        }
+        return text;
+      }
+
+      function renderSmetaHaulSummaryRowHtml() {
+        var text = smetaHaulSummaryText();
+        if (!text) return '';
+        return '<tr class="smeta-internal-haul-summary" data-smeta-internal-only="1">' +
+          '<td class="col-name" colspan="8">' + escapeHtml(text) + '</td></tr>';
+      }
+
+      function activateSmetaSection(sk) {
+        smetaState.activeSection = sk;
+        updateSmetaSectionChips();
+        refreshSmeta();
+      }
+
+      function sectionHasUserInput(sk) {
+        if (sk === 'drain') {
+          return perimeterMeters() != null || !!state.drainType || !!state.haulSand ||
+            !!state.outfallType || !!state.pump ||
+            (numVal(state.cablePnDM) != null && numVal(state.cablePnDM) > 0) ||
+            (numVal(state.outletPipe32M) != null && numVal(state.outletPipe32M) > 0);
+        }
+        if (sk === 'storm') {
+          return stormPerimeterMeters() != null || stormState.catchBasinCount !== '' ||
+            stormState.catchBasinCore != null;
+        }
+        if (sk === 'apron') {
+          return apronPerimeterMeters() != null || !!apronState.coating ||
+            !!apronState.haulSand || apronState.demolition != null;
+        }
+        return false;
+      }
+
+      /** Есть ли хоть один заполненный раздел — для PDF/Excel */
+      function ensureSmetaReadyForExport() {
+        refreshSmeta();
+        return smetaHasAnyContent();
+      }
+
+      function renderSmetaSectionBlockHtml(sk) {
+        if (!sectionHasTableBlock(sk)) return '';
+        var sec = smetaState.sections[sk];
+        var html = '<tr class="row-section-title" id="smeta-sec-' + sk + '" data-smeta-sec-anchor="' + sk + '">' +
+          '<td class="col-name">' + SECTION_TITLES[sk] + '</td>' +
+          '<td class="col-unit"></td><td class="col-equip"></td><td class="col-qty"></td>' +
+          '<td class="col-work"></td><td class="col-work-total"></td>' +
+          '<td class="col-sum"></td><td class="col-notes"></td></tr>';
+        getVisibleRowKeys(sk).forEach(function (key) {
+          if (!sec[key].hidden) html += renderSmetaDataRow(sk, key, sec[key]);
+        });
+        return html;
+      }
+
+      function resetDrainState() {
+        state.perimeterMode = 'direct';
+        state.perimeterM = '';
+        state.houseLengthM = '';
+        state.houseWidthM = '';
+        state.drainType = null;
+        state.inspectionWells = '';
+        state.houseToWellM = '';
+        state.outfallType = null;
+        state.outfallSize = null;
+        state.pump = null;
+        state.haulSand = null;
+        state.cablePnDM = '';
+        state.outletPipe32M = '';
+      }
+
+      function resetSmetaState() {
+        smetaState.activeSection = null;
+        smetaState.primarySection = null;
+        smetaState.editMode = false;
+        smetaState.sections = {
+          drain: defaultSectionRows(),
+          storm: defaultSectionRows(),
+          apron: defaultSectionRows()
+        };
+      }
+
+      function resetAllDopConfigurator() {
+        try { localStorage.removeItem(DOP_STORAGE_KEY); } catch (e) {}
+        resetDrainState();
+        resetApronState();
+        resetStormState();
+        resetSmetaState();
+        updateSmetaSectionChips();
+        applySmetaEditModeUi();
+        renderWizard();
+        renderApronWizard();
+        renderStormWizard();
+        refreshSmeta();
+      }
+
+      function renderWizard() {
+        if (!root) return;
+        var html = '<div class="drain-wizard">' +
+          renderPerimeterStep() +
+          renderDrainTypeStep() +
+          renderInspectionStep() +
+          renderHouseToWellStep() +
+          renderHaulSandStep() +
+          renderOutfallTypeStep() +
+          renderOutfallSizeStep() +
+          renderPumpStep() +
+          '<button type="button" class="drain-wizard-reset" id="drain-wizard-reset">Сбросить дренаж</button>' +
+          '</div>';
+        root.innerHTML = html;
+        bindWizardEvents();
+        syncDrainExtrasInputs();
+        renderSmetaTable();
+      }
+
+      function bindWizardEvents() {
+        root.querySelectorAll('[data-drain-set]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activateSmetaSection('drain');
+            var group = btn.getAttribute('data-drain-set');
+            var value = btn.getAttribute('data-drain-value');
+            if (group === 'perimeterMode') state.perimeterMode = value;
+            else if (group === 'drainType') {
+              state.drainType = value;
+              state.haulSand = null;
+            } else if (group === 'haulSand') state.haulSand = value;
+            else if (group === 'outfallType') {
+              state.outfallType = value;
+              state.outfallSize = null;
+            } else if (group === 'outfallSize') state.outfallSize = parseInt(value, 10);
+            else if (group === 'pump') state.pump = value;
+            renderWizard();
+          });
+        });
+        root.querySelectorAll('[data-drain-input]').forEach(function (inp) {
+          inp.addEventListener('input', function () {
+            activateSmetaSection('drain');
+            var field = inp.getAttribute('data-drain-input');
+            state[field] = inp.value;
+            if (field === 'inspectionWells' || field === 'houseToWellM' || field === 'perimeterM' || field === 'houseLengthM' || field === 'houseWidthM') {
+              state.haulSand = null;
+            }
+            root.querySelectorAll('.drain-wizard-step').forEach(function (el) {
+              var id = el.getAttribute('data-step');
+              if (id) el.className = 'drain-wizard-step ' + stepClass(id);
+              if (id === 'perimeter') {
+                var pm = perimeterMeters();
+                var pa = el.querySelector('.drain-wizard-ans');
+                if (pm != null) {
+                  if (!pa) {
+                    pa = document.createElement('p');
+                    pa.className = 'drain-wizard-ans';
+                    el.insertBefore(pa, el.querySelector('.drain-wizard-opts'));
+                  }
+                  pa.textContent = pm + ' м';
+                } else if (pa) pa.remove();
+              }
+              if (id === 'inspectionWells') {
+                var nw = numVal(state.inspectionWells);
+                var ia = el.querySelector('.drain-wizard-ans');
+                if (nw != null) {
+                  if (!ia) {
+                    ia = document.createElement('p');
+                    ia.className = 'drain-wizard-ans';
+                    el.insertBefore(ia, el.querySelector('.drain-wizard-field'));
+                  }
+                  ia.textContent = nw + ' шт.';
+                } else if (ia) ia.remove();
+              }
+              if (id === 'houseToWell') {
+                var hm = numVal(state.houseToWellM);
+                var ha = el.querySelector('.drain-wizard-ans');
+                if (hm != null) {
+                  if (!ha) {
+                    ha = document.createElement('p');
+                    ha.className = 'drain-wizard-ans';
+                    el.insertBefore(ha, el.querySelector('.drain-wizard-field'));
+                  }
+                  ha.textContent = hm + ' м';
+                } else if (ha) ha.remove();
+                var ht = el.querySelector('.drain-wizard-hint-total');
+                if (effectiveDrainLengthM() != null) {
+                  if (!ht) {
+                    ht = document.createElement('p');
+                    ht.className = 'drain-wizard-hint drain-wizard-hint-total';
+                    ht.style.color = 'var(--success)';
+                    el.appendChild(ht);
+                  }
+                  ht.textContent = effectiveDrainLengthHint();
+                } else if (ht) ht.remove();
+              }
+            });
+            refreshSmeta();
+          });
+          inp.addEventListener('change', function () {
+            renderWizard();
+          });
+        });
+        var resetBtn = document.getElementById('drain-wizard-reset');
+        if (resetBtn) {
+          resetBtn.addEventListener('click', function () {
+            resetDrainState();
+            renderWizard();
+            refreshSmeta();
+          });
+        }
+      }
+
+      /* ——— Смета (структура как в Excel) ——— */
+      var SECTION_TITLES = { drain: 'ДРЕНАЖ', storm: 'ЛИВНЁВКА', apron: 'ОТМОСТКА' };
+      /** Порядок разделов в переключателе */
+      var SMETA_SECTIONS = ['drain', 'apron', 'storm'];
+      var ORIENTATIONAL_PRICE_NOTE =
+        'Цена в смете — ориентировочная. Окончательная стоимость зависит от района МО и текущих цен поставщика на момент заказа.';
+
+      var SMETA_ROWS = {
+        delivery: {
+          countsInTotal: true,
+          title: 'Доставка материала',
+          bullets: [
+            'Погрузка материалов на складе поставщика.',
+            'Транспортировка до объекта (с учётом выезда за МКАД).',
+            'Разгрузка на участке (вручную или механизированно).',
+            'Занос материалов к месту работ (при удалении от парковки/подъезда).',
+            'Подъём материалов на этаж/цоколь (при необходимости).',
+            'Проверка качества материалов (визуальный осмотр на наличие повреждений, сколов, дефектов).'
+          ],
+          defaults: function () {
+            return {
+              unit: 'усл.',
+              equipCost: '--',
+              qty: '1',
+              workCost: 10000,
+              workCostWithEquip: 10000,
+              notes: 'До 80 км от МКАД далее по согласованию'
+            };
+          }
+        },
+        sand: {
+          position0: true,
+          title: 'Песок мытый/сеяный (крупная фракция) — организация поставки (цена ориентировочная, согласовывается под каждый объект)',
+          bullets: [
+            'Поиск субподрядчика с песком мытым/сеяным крупной фракции (именно для дренажа, не карьерный).',
+            'Запрос цен у 2–3 поставщиков в конкретном районе Московской области.',
+            'Согласование с заказчиком итоговой цены до закупки (фиксация по прайсу на дату заказа).',
+            'Организация подъезда для самосвала, контроль разгрузки в обозначенную зону.',
+            'Визуальная проверка песка (крупная фракция, чистый, без глины и мусора).'
+          ],
+          defaults: function () {
+            return {
+              unit: 'М3',
+              equipCost: 2200,
+              qty: '',
+              workCost: 0,
+              workCostWithEquip: 2200,
+              notes: ORIENTATIONAL_PRICE_NOTE
+            };
+          }
+        },
+        gravel: {
+          position0: true,
+          title: 'Щебень гравийный мытый (окатанный) фракции 20/40 мм — организация поставки (цена ориентировочная, согласовывается под каждый объект)',
+          bullets: [
+            'Поиск субподрядчика с щебнем гравийным мытым фракции 20/40 мм.',
+            'Запрос цен у 2–3 поставщиков в конкретном районе МО.',
+            'Согласование с заказчиком итоговой цены до закупки (фиксация по прайсу на дату заказа).',
+            'Организация подъезда, контроль разгрузки.',
+            'Визуальная проверка щебня (фракция, мытый, без пыли и глины).',
+            'Курирование процесса.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'М3',
+              equipCost: 4500,
+              qty: '',
+              workCost: 0,
+              workCostWithEquip: 4500,
+              notes: ORIENTATIONAL_PRICE_NOTE
+            };
+          }
+        },
+        concrete: {
+          position0: true,
+          title: 'Бетон марки М300 (или выше, по требованию) — организация поставки (цена ориентировочная, согласовывается под каждый объект)',
+          bullets: [
+            'Уточнение требуемой марки бетона под конкретный объект (M300, M350 и т.д.).',
+            'Поиск поставщика/бетонного узла в конкретном районе Московской области.',
+            'Запрос цен у 2–3 поставщиков (с учётом доставки миксером).',
+            'Согласование с заказчиком итоговой цены до закупки (фиксация по прайсу на дату закупки).',
+            'Организация подъезда миксера на участок (контроль проходимости, разворот).',
+            'Контроль приёмки бетона (визуальная проверка, при необходимости — конус осадки).',
+            'Курирование процесса заливки (координация с бригадой и миксером).'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м3',
+              equipCost: 8500,
+              qty: '',
+              workCost: 0,
+              workCostWithEquip: 8500,
+              notes: ORIENTATIONAL_PRICE_NOTE
+            };
+          }
+        },
+        drainSoftrock: {
+          countsInTotal: true,
+          title: 'Дренаж ГОЛЬФСТРИМ 300/110 (SoftRock) — готовая система, поверхностный (начальная глубина от 0,5 м)',
+          bullets: [
+            'Разметка трассы дренажа (отступ от отмостки 0,5–1 м).',
+            'Копка траншеи ручным способом от начальной глубины 0,5 м до 1 м с уклоном 1 см на 2 м.',
+            'Уплотнение дна, выравнивание уклона.',
+            'Песок на дно 5 см (трамбовка).',
+            'Укладка модулей ГОЛЬФСТРИМ 300/110 (по 3 м) в траншею.',
+            'Соединение модулей муфтами из комплекта.',
+            'Обмотка стыков строительным скотчем.',
+            '(Опционально) Полная засыпка магистрали песком доверху.',
+            'Обратная засыпка грунтом (если не полный песок).',
+            'Фотофиксация ключевых этапов (по запросу заказчика).',
+            'Уборка строительного мусора (упаковка, скотч, обрезки).',
+            '(Опционально) Выравнивание грунта над траншеей или уборка излишков грунта.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'п/м',
+              equipCost: 600,
+              qty: '',
+              workCost: 1400,
+              workCostWithEquip: 2000,
+              notes: 'В стоимость работ включены: монтаж модулей (материал — сами трубы ГОЛЬФСТРИМ 300/110), соединительные муфты из комплекта, строительный скотч для обмотки стыков, песок (на дно 5 см и засыпка 10 см). Щебень и отдельный геотекстиль не требуются. Опционально: полная засыпка магистрали песком (доп. согласование). Работы под ключ: разметка, копка траншеи, уплотнение, укладка, соединение, засыпка песком, обратная засыпка грунтом, уборка мусора.'
+            };
+          }
+        },
+        drainClassic1: {
+          countsInTotal: true,
+          title: 'Дренаж классический (песок + щебень) глубиной до 1 м — монтаж + материал',
+          bullets: [
+            'Разметка трассы дренажа (отступ от отмостки 0,5–1 м).',
+            'Копка траншеи ручным способом от начальной глубины 0,5 м до 1 м с уклоном 1 см на 2 м.',
+            'Уплотнение дна, выравнивание уклона.',
+            'Укладка геотекстиля (плотность ≥200 г/м²) на дно и стенки с запасом на перехлёст.',
+            'Песок на дно 10 см (трамбовка).',
+            'Укладка двухстенной перфорированной дренажной трубы диаметром 110 мм в фильтре.',
+            'Засыпка трубы щебнем фракции 20/40 мм слоем 20 см снизу и 20 см сверху (итого 40 см).',
+            'Заворачивание краёв геотекстиля внахлёст поверх щебня.',
+            'Засыпка песком слоем 5–10 см поверх геотекстиля.',
+            '(Опционально) Укладка геотекстиля между песком и дёрном/грунтом.',
+            'Обратная засыпка траншеи ранее вынутым грунтом (без камней).',
+            'Фотофиксация ключевых этапов (по запросу заказчика).',
+            'Уборка строительного мусора (упаковка, обрезки).',
+            '(Опционально) Выравнивание грунта над траншеей или уборка излишков грунта.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м.п.',
+              equipCost: 300,
+              qty: '',
+              workCost: 1700,
+              workCostWithEquip: 2000,
+              notes: 'В стоимость работ и материала включены: геотекстиль плотностью 200 г/м² и двухстенная перфорированная дренажная труба диаметром 110 мм в фильтре.'
+            };
+          }
+        },
+        drainClassic2: {
+          countsInTotal: true,
+          title: 'Дренаж классический (Песок + щебень) глубиной до 2,0 м — монтаж + материал',
+          bullets: [
+            'Разметка трассы дренажа (отступ от отмостки 0,5–1 м).',
+            'Копка траншеи ручным способом до глубины 2,0 м с уклоном 1 см на 2 м.',
+            'Уплотнение дна, выравнивание уклона.',
+            'Укладка геотекстиля (плотность ≥200 г/м²) на дно и стенки с запасом на перехлёст.',
+            'Песок на дно 10 см (трамбовка).',
+            'Укладка двухстенной перфорированной дренажной трубы диаметром 110 мм в фильтре.',
+            'Засыпка трубы щебнем фракции 20/40 мм слоем 20 см снизу и 20 см сверху (итого 40 см).',
+            'Заворачивание краёв геотекстиля внахлёст поверх щебня.',
+            'Засыпка песком слоем 5–10 см поверх геотекстиля.',
+            'Обратная засыпка траншеи ранее вынутым грунтом (без камней).',
+            'Фотофиксация ключевых этапов (по запросу заказчика).',
+            'Уборка строительного мусора (упаковка, обрезки).'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м.п.',
+              equipCost: 600,
+              qty: '',
+              workCost: 1400,
+              workCostWithEquip: 2000,
+              notes: 'Всё то же самое, что и до 1 м, только глубиной до 2 м.'
+            };
+          }
+        },
+        drainWell315: {
+          countsInTotal: true,
+          title: 'Колодец ревизионный пластиковый гофрированный 315 мм — монтаж + материал',
+          bullets: [
+            'Копка котлована ручным способом (глубина под высоту колодца + 10 см).',
+            'Уплотнение дна, песчаная подушка 10 см (трамбовка).',
+            'Сборка колодца (дно + шахта + крышка).',
+            'Разметка и вырезка отверстий под подключение дренажных труб.',
+            'Установка колодца на подушку, выравнивание по уровню.',
+            'Подключение дренажных магистралей к отверстиям (герметизация стыков).',
+            'Обратная засыпка пазух ранее вынутым грунтом (послойная трамбовка).',
+            '(Опционально) Подрезка шахты колодца под уровень грунта (если требуется).'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м.п',
+              equipCost: 2700,
+              qty: '',
+              workCost: 3700,
+              workCostWithEquip: 6400,
+              notes: 'Колодец поставляется комплектом (дно, шахта, крышка). В смете указывается общим метражом — суммарная высота всех шахт по проекту (например, 4 колодца: два по 1,5 м и два по 1 м = 5 метров).'
+            };
+          }
+        },
+        drainOutfallPlastic: {
+          countsInTotal: true,
+          title: 'Колодец дренажный пластиковый гофрированный 610 мм (дно + шахта + крышка) — монтаж + материал',
+          bullets: [
+            'Копка котлована ручным способом (глубина под высоту колодца + 10–15 см).',
+            'Уплотнение дна, песчаная подушка 10 см (трамбовка).',
+            'Сборка колодца (дно + шахта + крышка, при наличии — лестница/скобы).',
+            'Разметка и вырезка отверстий под подключение дренажных труб (если требуется).',
+            'Установка колодца на подушку, выравнивание по уровню.',
+            'Подключение дренажных магистралей (герметизация стыков).',
+            'Обратная засыпка пазух ранее вынутым грунтом (послойная трамбовка).',
+            '(Опционально) Подрезка шахты колодца под уровень грунта.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м.п',
+              equipCost: 9000,
+              qty: '',
+              workCost: 3500,
+              workCostWithEquip: 12500,
+              notes: 'Колодец поставляется комплектом. В смете указывается общим метражом (суммарная высота всех колодцев 610 мм по проекту). Засыпка пазух — грунтом.'
+            };
+          }
+        },
+        drainOutfallConcrete: {
+          countsInTotal: true,
+          title: 'Колодец дренажный из бетонных колец (от 2-х колец, без дна) — организация поставки + доставка + монтаж',
+          bullets: [
+            'Организация доставки колец и крышки на участок (манипулятор/кран).',
+            'Контроль разгрузки (проверка целостности, количества, качества).',
+            'Копка котлована под колодец.',
+            '(Опционально) Отсыпка щебня на дно (фракция 20/40, слой 10–15 см, трамбовка).',
+            'Установка бетонных колец (послойно, с герметизацией швов раствором).',
+            'Установка крышки (покупается отдельно).',
+            'Обратная засыпка пазух грунтом (послойная трамбовка).',
+            '(Опционально) Обратная засыпка пазух песком (вместо грунта).',
+            '(Опционально) Утепление крышки.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'Шт',
+              equipCost: 5000,
+              qty: '',
+              workCost: 5000,
+              workCostWithEquip: 10000,
+              notes: 'Колодец без дна. Крышка приобретается отдельно. Количество колец — от 2-х и выше по проекту.'
+            };
+          }
+        },
+        drainPump: {
+          countsInTotal: true,
+          title: 'Насос дренажный погружной (от 400 Вт) — монтаж + материал',
+          bullets: [
+            'Установка насоса в дренажный колодец на крепёжном комплекте (трос/цепь).',
+            'Подключение напорной трубы ПНД (диаметр по выходу насоса, обрезка по месту).',
+            '(Опционально) Подключение кабеля в ПНД трубе до щитка/розетки.',
+            'Настройка поплавкового выключателя (уровень включения/отключения).',
+            'Пробный пуск, проверка работоспособности и откачки воды.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'шт.',
+              equipCost: 7000,
+              qty: '',
+              workCost: 7300,
+              workCostWithEquip: 14300,
+              notes: 'Насос для откачки воды из дренажного колодца. Мощность от 400 Вт (стандартно 400 Вт, возможна установка более мощного). Кабель — опционально.'
+            };
+          }
+        },
+        sandHaul: {
+          countsInTotal: true,
+          title: 'Подвоз песка или щебня вручную (от места выгрузки до траншеи/котлована)',
+          bullets: [
+            'Перемещение материала (песок, щебень) от места выгрузки до траншеи/котлована.',
+            'Транспортировка осуществляется по одному маршруту для минимизации разрушительного эффекта на участок (уплотнение грунта, повреждение газона).',
+            'Засыпка материала в траншею/котлован согласно технологии.',
+            '(При необходимости) Растаскивание материала вдоль траншеи на расстояние до 20–30 м.',
+            '(Опционально) Подстилка планок/фанеры для чистой работы (снижение загрязнения участка).'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м3',
+              equipCost: '',
+              qty: '',
+              workCost: 2000,
+              workCostWithEquip: 2000,
+              notes: 'В стандартную стоимость входит подвоз до 50 м от места выгрузки. Расстояние более 50 м — отдельное согласование.'
+            };
+          }
+        },
+        drainCablePnd: {
+          countsInTotal: true,
+          title: 'Кабель в ПНД трубе (3×1,5 мм²) — монтаж + материал',
+          bullets: [
+            'Прокладка ПНД трубы по дну траншеи (вместе с дренажной магистралью или отдельно).',
+            'Протяжка кабеля внутри ПНД трубы.',
+            'Укладка трубы с кабелем в траншею.',
+            'Вывод концов трубы в колодец/приямок и к месту подключения (щиток, розетка).',
+            '(Опционально) Кабель большего сечения (под более мощный насос).',
+            '(Опционально) Подключение кабеля к щитку или источнику электричества (в стандартную стоимость не входит).'
+          ],
+          defaults: function () {
+            return {
+              unit: 'М/п',
+              equipCost: 200,
+              qty: '',
+              workCost: 600,
+              workCostWithEquip: 800,
+              notes: 'Кабель для подключения дренажного насоса. В стандартной комплектации — 3×1,5 мм². Подключение к электричеству — опционально, по отдельному согласованию.'
+            };
+          }
+        },
+        drainOutletPipe32: {
+          countsInTotal: true,
+          title: 'Отводящая труба от насоса ПНД 32 мм — монтаж + материал',
+          bullets: [
+            'Подключение трубы ПНД 32 мм к выходному патрубку насоса.',
+            'Прокладка трубы от насоса до места сброса воды (канава, ливнёвка, колодец, за пределы участка).',
+            'Укладка трубы в траншею (при необходимости — с уклоном для самотека).',
+            '(Опционально) Утепление трубы при прокладке выше глубины промерзания.',
+            '(Опционально) Установка обратного клапана на трубе.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'М/п',
+              equipCost: 200,
+              qty: '',
+              workCost: 1000,
+              workCostWithEquip: 1200,
+              notes: 'Труба для откачки воды из дренажного колодца в точку сброса. Длина — по факту. Диаметр 32 мм.'
+            };
+          }
+        },
+        apronSoft: {
+          countsInTotal: true,
+          title: 'Мягкая отмостка (песок/щебень)',
+          bullets: [
+            'Выемка грунта на 25 см с уклоном 2–3% от стены.',
+            'Песок 10 см (проливка, трамбовка виброплитой).',
+            'Мембрана PLANTER (заведение на цоколь 15–20 см, нахлёст ≥ 10 см).',
+            'Щебень 20/40 мм — 15 см (уплотнение).',
+            '(Опционально) Геотекстиль 250 г/м² поверх щебня.',
+            '(Опционально) Финишная засыпка чистого мытого щебня 20/40 мм — 5–7 см.',
+            '(Опционально) Садовый бордюр по внешнему краю (фиксация на раствор или на геотекстиль/щебень).',
+            '(Опционально) Вертикальный шифер вдоль цоколя (частично в грунт) от осыпания щебня.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м3',
+              equipCost: 700,
+              qty: '',
+              workCost: 2200,
+              workCostWithEquip: 2900,
+              notes: 'Включено всё, кроме нерудных материалов (песок, щебень). Песок и щебень — за отдельный расчёт (организация поставки субподрядчиком либо заказчик). Мембрана PLANTER, геотекстиль, шифер (опционально), бордюр (опционально) — входят в стоимость. Работы под ключ: выемка грунта, трамбовка, укладка мембраны, засыпка щебня (материал заказчика), финишные работы.'
+            };
+          }
+        },
+        apronHard: {
+          countsInTotal: true,
+          title: '«Твердая» отмостка (бетон)',
+          bullets: [
+            'Выемка грунта на 40–50 см с уклоном 1–3% от стены.',
+            'Геотекстиль (≥200 г/м²) на утрамбованное основание.',
+            'Песок 15 см (проливка, трамбовка).',
+            'Щебень 20/40 мм — 15 см (уплотнение).',
+            'Мембрана PLANTER (нахлёст ≥10 см, проклейка).',
+            'Опалубка, рейки для швов через 3 м.',
+            'Армирование сеткой 100×100 или арматурой 6–8 мм на фиксаторах (3–5 см от мембраны).',
+            'Бетон М300 — 10 см (уклон, вибро/штыкование).',
+            'Деформационные швы через 3 м (глубина 3 см, герметик/мастика).',
+            'Компенсационный шов у цоколя (демпферная лента).',
+            '(Опционально) ЭППС ≥50 мм с проклейкой стыков.',
+            '(Опционально) Бордюр по краю на раствор до заливки.',
+            'Уход: укрыть плёнкой на 2–4 недели, увлажнять первые 7 дней.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м3',
+              equipCost: 2000,
+              qty: '',
+              workCost: 2500,
+              workCostWithEquip: 4500,
+              notes: 'Включено всё, кроме нерудных материалов и бетона. Песок, щебень, бетон — за отдельный расчёт (организация поставки субподрядчиком либо заказчик). Геотекстиль, мембрана PLANTER, арматура/сетка, опалубка, деформационные швы, герметик, демпферная лента — входят в стоимость. Работы под ключ: выемка грунта, подушка, армирование, заливка (бетон заказчика), уход за бетоном.'
+            };
+          }
+        },
+        apronParkingDriveConcrete: {
+          countsInTotal: true,
+          title: '«Парковка/Заезд» (бетон)',
+          bullets: [
+            'Выемка грунта на 40–50 см с уклоном 1–3% от стены.',
+            'Геотекстиль (≥200 г/м²) на утрамбованное основание.',
+            'Песок 15 см (проливка, трамбовка).',
+            'Щебень 20/40 мм — 15 см (уплотнение).',
+            'Мембрана PLANTER (нахлёст ≥10 см, проклейка).',
+            'Опалубка, рейки для швов через 3 м.',
+            'Армирование сеткой 100×100 или арматурой 6–8 мм на фиксаторах (3–5 см от мембраны).',
+            'Бетон М300 — 20 см (уклон, вибро/штыкование).',
+            'Деформационные швы через 3 м (глубина 3 см, герметик/мастика).',
+            'Компенсационный шов у цоколя (демпферная лента).',
+            '(Опционально) ЭППС ≤50 мм с проклейкой стыков.',
+            '(Опционально) Бордюр по краю на раствор до заливки.',
+            'Уход: укрыть плёнкой на 2–4 недели, увлажнять первые 7 дней.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м2',
+              equipCost: 2000,
+              qty: '',
+              workCost: 3500,
+              workCostWithEquip: 5500,
+              notes: 'Опциональная позиция. По умолчанию не добавляется в отмостку — включайте вручную, если нужна.'
+            };
+          }
+        },
+        apronInsulation: {
+          countsInTotal: true,
+          title: 'Утепление отмостки',
+          bullets: [
+            'Укладка ЭППС (или иного утеплителя) по проекту.',
+            'Проклейка стыков утеплителя.',
+            'Фиксация утеплителя перед устройством отмостки.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м3',
+              equipCost: 500,
+              qty: '',
+              workCost: 400,
+              workCostWithEquip: 900,
+              notes: ''
+            };
+          }
+        },
+        apronBorder: {
+          countsInTotal: true,
+          title: 'Бордюр садовый бетонный — установка + материал (пескобетон входит в стоимость)',
+          bullets: [
+            'Разметка линии установки бордюра (по внешнему краю отмостки или дорожки).',
+            'Копка канавки под бордюр (глубина на 1/3 высоты бордюра).',
+            'Уплотнение дна, отсыпка песчаной подушки 5 см (трамбовка).',
+            'Организация доставки пескобетона, разгрузка, транспортировка к месту работ.',
+            'Приготовление раствора из пескобетона (замес с водой).',
+            'Установка бордюров по уровню (горизонталь и вертикаль).',
+            'Фиксация бордюров на растворе.',
+            '(Опционально) Затирка швов между бордюрами.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м.п.',
+              equipCost: 400,
+              qty: '',
+              workCost: 900,
+              workCostWithEquip: 1300,
+              notes: 'Бордюр бетонный. Пескобетон для раствора входит в стоимость. Установка строго по уровню.'
+            };
+          }
+        },
+        apronSlate: {
+          countsInTotal: true,
+          title: 'Шифер (внутренний бордюр) — установка вдоль цоколя (для предотвращения осыпания щебня)',
+          bullets: [
+            'Разметка линии установки шифера вдоль цоколя (на границе отмостки/засыпки).',
+            'Копка канавки под шифер (частичное заглубление в грунт на 10–15 см).',
+            'Установка листов шифера вертикально, встык или с небольшим нахлёстом.',
+            '(Опционально) Арматура для фиксации листов шифера с внутренней стороны (при необходимости).',
+            'Фиксация шифера грунтом/песком с обеих сторон.',
+            'Подсыпка грунта/песка для удержания вертикального положения.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м.п.',
+              equipCost: 300,
+              qty: '',
+              workCost: 500,
+              workCostWithEquip: 800,
+              notes: 'Шифер используется в качестве внутреннего бордюра (ограничителя) для предотвращения осыпания щебня мягкой отмостки. Заглубляется в грунт частично.'
+            };
+          }
+        },
+        stormPipe110: {
+          countsInTotal: true,
+          title: 'Ливневая канализация — труба гофрированная двухстенная 110 мм (монтаж + материал)',
+          bullets: [
+            'Разметка трассы ливневки (от дождеприемников до точки сброса).',
+            'Копка траншеи ручным способом (глубина от 50 см, уклон 1–2 см на метр).',
+            'Уплотнение дна, выравнивание уклона.',
+            'Укладка трубы гофрированной двухстенной 110 мм.',
+            'Соединение труб муфтами/раструбами (с уплотнителями).',
+            'Обратная засыпка траншеи ранее вынутым грунтом.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м.п.',
+              equipCost: 300,
+              qty: '',
+              workCost: 600,
+              workCostWithEquip: 900,
+              notes: 'Труба гофрированная двухстенная 110 мм для ливневой канализации. Глубина от 50 см. Утепление не требуется.'
+            };
+          }
+        },
+        stormCatchBasin300: {
+          countsInTotal: true,
+          title: 'Дождеприемник пластиковый 300×300 мм (с корзиной, решёткой в комплекте) — монтаж + материал',
+          bullets: [
+            'Копка котлована под дождеприемник (глубина по высоте корпуса + подушка).',
+            'Уплотнение дна, песчаная подушка 10 см (трамбовка).',
+            'Установка дождеприемника на подушку, выравнивание по уровню.',
+            'Подключение отводящей трубы (гофрированная 110 мм) к выходному патрубку.',
+            'Засыпка пазух грунтом/песком, трамбовка.',
+            'Установка корзины и решётки (в комплекте).',
+            '(Опционально) Чугунная крышка (вместо пластиковой).',
+            '(Опционально) Наросты для увеличения высоты дождеприемника.',
+            '(Опционально) Крышка с разным узором (по выбору заказчика).'
+          ],
+          defaults: function () {
+            return {
+              unit: 'шт.',
+              equipCost: 1500,
+              qty: '',
+              workCost: 3000,
+              workCostWithEquip: 4500,
+              notes: 'Дождеприемник 300×300 мм, пластиковый. Решётка в комплекте. Опционально — чугунная крышка, наросты, декоративная крышка с узором.'
+            };
+          }
+        },
+        stormCatchBasinCore: {
+          countsInTotal: true,
+          title: 'Демонтаж (прокол) под дождеприемник',
+          bullets: [
+            'Разметка места установки дождеприемника.',
+            'Прокол/вырезка отверстия в покрытии (бетон, плитка, асфальт и т.п.) под корпус приемника.',
+            'Подготовка посадочного места под установку дождеприемника.',
+            'Уборка и вывоз обрезков покрытия с участка (при необходимости — отдельно).'
+          ],
+          defaults: function () {
+            return {
+              unit: 'шт.',
+              equipCost: 0,
+              qty: '',
+              workCost: 2500,
+              workCostWithEquip: 2500,
+              notes: 'Стоимость за одно отверстие/прокол под один дождеприемник. Количество — по факту на объекте.'
+            };
+          }
+        },
+        apronDemolition: {
+          countsInTotal: true,
+          title: 'Демонтаж существующей отмостки (бетон/плитка/асфальт) — работа',
+          bullets: [
+            'Разборка старой отмостки (перфоратор, лом, кувалда — в зависимости от материала).',
+            'Складирование демонтированного материала в кучу на участке (до 2 м³ — бесплатно, входит в стоимость).',
+            '(Опционально) Погрузка демонтированного материала (при объёме более 2 м³ — отдельная плата).',
+            '(Опционально) Вывоз мусора с участка (всегда отдельная плата, не входит в стандартную стоимость).',
+            'Зачистка основания от остатков бетона/плитки.'
+          ],
+          defaults: function () {
+            return {
+              unit: 'м3',
+              equipCost: 0,
+              qty: '',
+              workCost: 2500,
+              workCostWithEquip: 2500,
+              notes: 'Демонтаж выполняется до начала устройства новой отмостки. Складирование до 2 м³ — бесплатно. Погрузка — только при объёме более 2 м³ за отдельную плату. Вывоз мусора с участка — всегда отдельно.'
+            };
+          }
+        }
+      };
+
+      var SMETA_ROW_ORDER = [
+        'delivery', 'sand', 'gravel', 'concrete',
+        'drainSoftrock', 'drainClassic1', 'drainClassic2', 'drainWell315',
+        'drainOutfallPlastic', 'drainOutfallConcrete', 'drainPump',
+        'sandHaul', 'drainOutletPipe32', 'drainCablePnd',
+        'stormPipe110', 'stormCatchBasin300', 'stormCatchBasinCore',
+        'apronSoft', 'apronHard', 'apronParkingDriveConcrete', 'apronInsulation', 'apronBorder', 'apronSlate', 'apronDemolition'
+      ];
+
+      var STORM_ONLY_ROW_KEYS = ['stormPipe110', 'stormCatchBasin300', 'stormCatchBasinCore'];
+
+      var DRAIN_ONLY_ROW_KEYS = [
+        'drainSoftrock', 'drainClassic1', 'drainClassic2', 'drainWell315',
+        'drainOutfallPlastic', 'drainOutfallConcrete', 'drainPump',
+        'drainCablePnd', 'drainOutletPipe32', 'sandHaul'
+      ];
+
+      var APRON_ONLY_ROW_KEYS = [
+        'apronSoft', 'apronHard', 'apronParkingDriveConcrete', 'apronInsulation', 'apronBorder', 'apronSlate', 'apronDemolition'
+      ];
+
+      var DRAIN_TYPE_ROW = {
+        soft_rock: 'drainSoftrock',
+        classic_05_1: 'drainClassic1',
+        classic_to_2: 'drainClassic2'
+      };
+
+      var OUTFALL_TYPE_ROW = {
+        plastic: 'drainOutfallPlastic',
+        concrete: 'drainOutfallConcrete'
+      };
+
+      function createRow(rowKey) {
+        var row = SMETA_ROWS[rowKey].defaults();
+        row.hidden = false;
+        row.customTitle = null;
+        row.customBullets = null;
+        return row;
+      }
+
+      function defaultSectionRows() {
+        var o = {};
+        SMETA_ROW_ORDER.forEach(function (key) {
+          o[key] = createRow(key);
+        });
+        return o;
+      }
+
+      var smetaState = {
+        activeSection: null,
+        primarySection: null,
+        editMode: false,
+        sections: {
+          drain: defaultSectionRows(),
+          storm: defaultSectionRows(),
+          apron: defaultSectionRows()
+        }
+      };
+
+      var tableWrap = document.getElementById('materials-table-wrap');
+      var editToggleBtn = document.getElementById('smeta-edit-toggle');
+      var hiddenWrap = document.getElementById('smeta-hidden-wrap');
+      var hiddenList = document.getElementById('smeta-hidden-list');
+
+      var stormState = {
+        perimeterMode: 'direct',
+        perimeterM: '',
+        houseLengthM: '',
+        houseWidthM: '',
+        catchBasinCount: '',
+        catchBasinCore: null
+      };
+
+      function resetStormState() {
+        stormState.perimeterMode = 'direct';
+        stormState.perimeterM = '';
+        stormState.houseLengthM = '';
+        stormState.houseWidthM = '';
+        stormState.catchBasinCount = '';
+        stormState.catchBasinCore = null;
+      }
+
+      function stormPerimeterMeters() {
+        if (stormState.perimeterMode === 'dimensions') {
+          var l = numVal(stormState.houseLengthM);
+          var w = numVal(stormState.houseWidthM);
+          if (l == null || w == null || l <= 0 || w <= 0) return null;
+          return Math.round(2 * (l + w) * 10) / 10;
+        }
+        var p = numVal(stormState.perimeterM);
+        return p != null && p > 0 ? p : null;
+      }
+
+      function syncStormQty() {
+        var sec = smetaState.sections.storm;
+        if (!sec) return;
+        var p = stormPerimeterMeters();
+        if (p != null) {
+          var pipeRow = sec.stormPipe110;
+          if (pipeRow) pipeRow.qty = String(p);
+        }
+        var basins = numVal(stormState.catchBasinCount);
+        if (basins != null && basins >= 1) {
+          var basinRow = sec.stormCatchBasin300;
+          if (basinRow) basinRow.qty = String(Math.floor(basins));
+        }
+        if (stormState.catchBasinCore === 'yes' && basins != null && basins >= 1) {
+          var coreRow = sec.stormCatchBasinCore;
+          if (coreRow) coreRow.qty = String(Math.floor(basins));
+        }
+      }
+
+      var apronState = {
+        perimeterMode: 'direct',
+        perimeterM: '',
+        houseLengthM: '',
+        houseWidthM: '',
+        stripWidthM: '',
+        finish: null,
+        haulSand: null,
+        coating: null,
+        parkingDriveConcrete: null,
+        border: false,
+        slate: false,
+        insulation: null,
+        demolition: null
+      };
+
+      function resetApronState() {
+        apronState.perimeterMode = 'direct';
+        apronState.perimeterM = '';
+        apronState.houseLengthM = '';
+        apronState.houseWidthM = '';
+        apronState.stripWidthM = '';
+        apronState.finish = null;
+        apronState.haulSand = null;
+        apronState.coating = null;
+        apronState.parkingDriveConcrete = null;
+        apronState.border = false;
+        apronState.slate = false;
+        apronState.insulation = null;
+        apronState.demolition = null;
+      }
+
+      function setApronCoating(value) {
+        apronState.coating = value;
+        if (value === 'soft') {
+          apronState.insulation = null;
+          apronState.parkingDriveConcrete = null;
+        } else if (value === 'concrete') {
+          apronState.border = false;
+          apronState.slate = false;
+        }
+      }
+
+      function apronPerimeterMeters() {
+        if (apronState.perimeterMode === 'dimensions') {
+          var l = numVal(apronState.houseLengthM);
+          var w = numVal(apronState.houseWidthM);
+          if (l == null || w == null || l <= 0 || w <= 0) return null;
+          return Math.round(2 * (l + w) * 10) / 10;
+        }
+        var p = numVal(apronState.perimeterM);
+        return p != null && p > 0 ? p : null;
+      }
+
+      function syncApronQty() {
+        var p = apronPerimeterMeters();
+        if (p == null) return;
+        var sec = smetaState.sections.apron;
+
+        function fillIfEmpty(rowKey) {
+          var r = sec[rowKey];
+          if (!r) return;
+          var raw = String(r.qty == null ? '' : r.qty).trim();
+          if (raw !== '') return;
+          r.qty = String(p);
+        }
+
+        if (apronState.coating === 'soft') fillIfEmpty('apronSoft');
+        if (apronState.coating === 'concrete') fillIfEmpty('apronHard');
+        if (apronState.coating === 'soft' && apronState.border) fillIfEmpty('apronBorder');
+        if (apronState.coating === 'soft' && apronState.slate) fillIfEmpty('apronSlate');
+        if (apronState.coating === 'concrete' && apronState.insulation === 'yes') fillIfEmpty('apronInsulation');
+        if (apronState.demolition === 'yes') fillIfEmpty('apronDemolition');
+      }
+
+      function syncApronConcreteQty() {
+        if (apronState.coating !== 'concrete') return;
+        var parts = calcApronHaulParts();
+        if (!parts || parts.concrete == null || parts.concrete <= 0) return;
+        var targetSec = concreteMaterialsSection();
+        if (!targetSec) return;
+        var concRow = smetaState.sections[targetSec].concrete;
+        if (!concRow) return;
+        concRow.qty = String(ceilHaulM3(parts.concrete));
+      }
+
+      function sharedMaterialsHostSection() {
+        if (sectionHasUserInput('drain')) return 'drain';
+        if (sectionHasUserInput('apron')) return 'apron';
+        if (sectionHasUserInput('storm')) return 'storm';
+        return null;
+      }
+
+      function concreteMaterialsSection() {
+        if (apronState.coating !== 'concrete') return null;
+        if (sectionHasUserInput('drain')) return 'drain';
+        if (sectionHasUserInput('apron')) return 'apron';
+        return null;
+      }
+
+      function drainTypeRowKeys() {
+        return Object.keys(DRAIN_TYPE_ROW).map(function (k) { return DRAIN_TYPE_ROW[k]; });
+      }
+
+      function shouldShowSmetaRow(sectionKey, rowKey) {
+        if (rowKey === 'sandHaul') {
+          if (sectionKey === 'drain') return sandHaulActiveInDrain();
+          if (sectionKey === 'apron') return sandHaulActiveInApron() && !sandHaulActiveInDrain();
+          return false;
+        }
+        if (STORM_ONLY_ROW_KEYS.indexOf(rowKey) !== -1) {
+          if (sectionKey !== 'storm') return false;
+          if (rowKey === 'stormPipe110') return stormPerimeterMeters() != null;
+          if (rowKey === 'stormCatchBasin300') {
+            var bc = numVal(stormState.catchBasinCount);
+            return bc != null && bc >= 1;
+          }
+          if (rowKey === 'stormCatchBasinCore') return stormState.catchBasinCore === 'yes';
+          return false;
+        }
+        if (APRON_ONLY_ROW_KEYS.indexOf(rowKey) !== -1) {
+          if (sectionKey !== 'apron') return false;
+          if (rowKey === 'apronSoft') return apronState.coating === 'soft';
+          if (rowKey === 'apronHard') return apronState.coating === 'concrete';
+          if (rowKey === 'apronParkingDriveConcrete') return apronState.coating === 'concrete' && apronState.parkingDriveConcrete === 'yes';
+          if (rowKey === 'apronBorder') return apronState.coating === 'soft' && apronState.border;
+          if (rowKey === 'apronSlate') return apronState.coating === 'soft' && apronState.slate;
+          if (rowKey === 'apronInsulation') {
+            return apronState.coating === 'concrete' && apronState.insulation === 'yes';
+          }
+          if (rowKey === 'apronDemolition') return apronState.demolition === 'yes';
+          return false;
+        }
+        if (sectionKey === 'apron' && DRAIN_ONLY_ROW_KEYS.indexOf(rowKey) !== -1) return false;
+        if (sectionKey === 'storm') {
+          if (DRAIN_ONLY_ROW_KEYS.indexOf(rowKey) !== -1) return false;
+          if (APRON_ONLY_ROW_KEYS.indexOf(rowKey) !== -1) return false;
+        }
+        if (sectionKey === 'drain' && STORM_ONLY_ROW_KEYS.indexOf(rowKey) !== -1) return false;
+        if (sectionKey === 'apron' && STORM_ONLY_ROW_KEYS.indexOf(rowKey) !== -1) return false;
+        if (rowKey === 'concrete') {
+          var concSec = concreteMaterialsSection();
+          return concSec != null && sectionKey === concSec;
+        }
+        if (drainTypeRowKeys().indexOf(rowKey) !== -1) {
+          return sectionKey === 'drain' && DRAIN_TYPE_ROW[state.drainType] === rowKey;
+        }
+        if (rowKey === 'drainWell315') {
+          var n = numVal(state.inspectionWells);
+          return sectionKey === 'drain' && n != null && n >= 1;
+        }
+        if (outfallTypeRowKeys().indexOf(rowKey) !== -1) {
+          return sectionKey === 'drain' && OUTFALL_TYPE_ROW[state.outfallType] === rowKey;
+        }
+        if (rowKey === 'drainPump') {
+          return sectionKey === 'drain' && state.pump === 'yes';
+        }
+        if (rowKey === 'drainCablePnd') {
+          var cm = numVal(state.cablePnDM);
+          return sectionKey === 'drain' && cm != null && cm > 0;
+        }
+        if (rowKey === 'drainOutletPipe32') {
+          var om = numVal(state.outletPipe32M);
+          return sectionKey === 'drain' && om != null && om > 0;
+        }
+        if (rowKey === 'delivery' || rowKey === 'sand' || rowKey === 'gravel') {
+          var host = sharedMaterialsHostSection();
+          return host != null && sectionKey === host;
+        }
+        return true;
+      }
+
+      function outfallTypeRowKeys() {
+        return Object.keys(OUTFALL_TYPE_ROW).map(function (k) { return OUTFALL_TYPE_ROW[k]; });
+      }
+
+      function syncDrainSoftrockQty() {
+        var rowKey = DRAIN_TYPE_ROW[state.drainType];
+        if (rowKey) {
+          var len = effectiveDrainLengthM();
+          if (len == null) len = perimeterMeters();
+          var row = smetaState.sections.drain[rowKey];
+          if (row && len != null) row.qty = String(len);
+        }
+        var wells = numVal(state.inspectionWells);
+        var wellRow = smetaState.sections.drain.drainWell315;
+        if (wellRow && wells != null && wells >= 1) wellRow.qty = String(wells);
+        var outfallRowKey = OUTFALL_TYPE_ROW[state.outfallType];
+        if (outfallRowKey && state.outfallSize != null) {
+          var outfallRow = smetaState.sections.drain[outfallRowKey];
+          if (outfallRow) outfallRow.qty = String(state.outfallSize);
+        }
+        var pumpRow = smetaState.sections.drain.drainPump;
+        if (pumpRow && state.pump === 'yes' && (pumpRow.qty == null || pumpRow.qty === '')) {
+          pumpRow.qty = '1';
+        }
+        var cableM = numVal(state.cablePnDM);
+        var cableRow = smetaState.sections.drain.drainCablePnd;
+        if (cableRow && cableM != null && cableM > 0) cableRow.qty = String(cableM);
+        var outletM = numVal(state.outletPipe32M);
+        var outletRow = smetaState.sections.drain.drainOutletPipe32;
+        if (outletRow && outletM != null && outletM > 0) outletRow.qty = String(outletM);
+      }
+
+      function getVisibleRowKeys(sectionKey) {
+        return SMETA_ROW_ORDER.filter(function (key) {
+          return shouldShowSmetaRow(sectionKey, key);
+        });
+      }
+
+      function onApronConfigChanged(focusApronSection) {
+        if (focusApronSection) {
+          smetaState.activeSection = 'apron';
+          updateSmetaSectionChips();
+          scrollToSmetaSection('apron');
+        }
+        refreshSmeta();
+      }
+
+      function onStormConfigChanged() {
+        refreshSmeta();
+      }
+
+      function getRowTitle(rowKey, row) {
+        if (row.customTitle != null && String(row.customTitle).trim() !== '') return String(row.customTitle).trim();
+        return SMETA_ROWS[rowKey].title;
+      }
+
+      function getRowBullets(rowKey, row) {
+        if (row.customBullets && row.customBullets.length) return row.customBullets;
+        return SMETA_ROWS[rowKey].bullets.slice();
+      }
+
+      function rowShortLabel(rowKey, row) {
+        var t = getRowTitle(rowKey, row);
+        return t.length > 55 ? t.slice(0, 52) + '…' : t;
+      }
+
+      function fmtMoney(n) {
+        if (n == null || isNaN(n)) return '';
+        return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      }
+
+      function parseNum(s) {
+        if (s == null || s === '') return null;
+        if (s === '--') return null;
+        var n = parseFloat(String(s).replace(/\s/g, '').replace(',', '.'));
+        return isNaN(n) ? null : n;
+      }
+
+      function effectiveQty(row, rowKey, sectionKey) {
+        if (rowKey === 'sandHaul' && sectionKey) {
+          var hq = syncedHaulQty();
+          if (hq != null) return hq;
+        }
+        if (rowKey === 'concrete' && sectionKey && shouldShowSmetaRow(sectionKey, rowKey)) {
+          var cq = syncedConcreteQty();
+          if (cq != null) return cq;
+        }
+        var q = parseNum(row.qty);
+        if (q != null && q > 0) return q;
+        if (SMETA_ROWS[rowKey].position0) return null;
+        var u = String(row.unit || '').toLowerCase().replace(/\s/g, '');
+        if (u === 'усл.' || u === 'усл' || u === 'шт.' || u === 'шт') return 1;
+        return null;
+      }
+
+      function lineSum(rowKey, row, sectionKey) {
+        var q = effectiveQty(row, rowKey, sectionKey);
+        var w = parseNum(row.workCostWithEquip);
+        if (q == null || w == null) return 0;
+        return q * w;
+      }
+
+      function displayLineSum(sectionKey, rowKey, row) {
+        if (row.hidden) return 0;
+        // Позиции-поставки (песок/щебень/доставка) не считаем в итог.
+        // Исключение: бетон в разделе «Отмостка» должен считаться в итог.
+        if (SMETA_ROWS[rowKey].position0) {
+          if (rowKey === 'concrete' && shouldShowSmetaRow(sectionKey, rowKey)) {
+            return lineSum(rowKey, row, sectionKey);
+          }
+          return 0;
+        }
+        return lineSum(rowKey, row, sectionKey);
+      }
+
+      function sectionTotal(sectionKey) {
+        var sec = smetaState.sections[sectionKey];
+        var total = 0;
+        getVisibleRowKeys(sectionKey).forEach(function (key) {
+          var row = sec[key];
+          if (!row || row.hidden) return;
+          total += displayLineSum(sectionKey, key, row);
+        });
+        return total;
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function syncInlineTextFields(rowKey, row, field, value) {
+        var def = SMETA_ROWS[rowKey];
+        if (field === 'inlineTitle') {
+          var t = String(value || '').trim();
+          row.customTitle = t === def.title ? null : t;
+        } else if (field === 'inlineBullets') {
+          var bullets = String(value || '')
+            .split('\n')
+            .map(function (l) { return l.replace(/^\d+\.\s*/, '').trim(); })
+            .filter(Boolean);
+          row.customBullets = bullets.length && bullets.join('|') !== def.bullets.join('|') ? bullets : null;
+        }
+      }
+
+      function smetaHideBtnHtml(sectionKey, rowKey) {
+        return '<div class="smeta-row-actions"><button type="button" class="smeta-row-btn smeta-row-btn--hide" data-smeta-section="' +
+          sectionKey + '" data-smeta-hide="' + rowKey + '">Скрыть</button></div>';
+      }
+
+      function itemNameHtml(sectionKey, rowKey, row) {
+        var actions = smetaHideBtnHtml(sectionKey, rowKey);
+        if (smetaState.editMode) {
+          return actions +
+            '<input class="smeta-cell-input smeta-inline-title" type="text" data-smeta-field="inlineTitle" value="' +
+            escapeHtml(getRowTitle(rowKey, row)) + '" />' +
+            '<textarea class="smeta-cell-input smeta-inline-bullets" data-smeta-field="inlineBullets" rows="5">' +
+            escapeHtml(getRowBullets(rowKey, row).join('\n')) + '</textarea>';
+        }
+        var lis = getRowBullets(rowKey, row).map(function (t) { return '<li>' + escapeHtml(t) + '</li>'; }).join('');
+        return actions +
+          '<span class="smeta-item-title">' + escapeHtml(getRowTitle(rowKey, row)) + '</span>' +
+          '<ol class="smeta-item-list">' + lis + '</ol>';
+      }
+
+      var PDF_FONT_ARIAL = 'Arial';
+      var PDF_FONT_TNR = 'TimesNewRoman';
+      /** Общий масштаб PDF (как «все столбцы на одной странице» в Excel) */
+      var SMETA_PDF_SCALE = 0.68;
+      function pdfFs(n) {
+        return Math.max(5, Math.round(n * SMETA_PDF_SCALE * 10) / 10);
+      }
+      var PDF_FONT_SIZE_BODY = pdfFs(9);
+      var PDF_FS_HEADER = pdfFs(14);
+      var PDF_FS_TITLE = pdfFs(12);
+      var PDF_FS_BULLET = pdfFs(7);
+      var PDF_FS_TOTAL = pdfFs(11);
+      var PDF_NOTO_CDN_BASE = 'https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/';
+      var smetaPdfFontPromise = null;
+
+      function pdfVfsFromArrayBuffer(buf) {
+        var bytes = new Uint8Array(buf);
+        var bin = '';
+        var chunk = 0x8000;
+        for (var i = 0; i < bytes.length; i += chunk) {
+          bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+        }
+        return btoa(bin);
+      }
+
+      function loadPdfVfsFont(vfsName, familyFolder, fileName) {
+        pdfMake.vfs = pdfMake.vfs || {};
+        if (pdfMake.vfs[vfsName]) return Promise.resolve();
+        var url = PDF_NOTO_CDN_BASE + familyFolder + '/' + fileName;
+        return fetch(url).then(function (r) {
+          if (!r.ok) throw new Error('font ' + vfsName);
+          return r.arrayBuffer();
+        }).then(function (buf) {
+          pdfMake.vfs[vfsName] = pdfVfsFromArrayBuffer(buf);
+        });
+      }
+
+      function ensureSmetaPdfFonts() {
+        if (smetaPdfFontPromise) return smetaPdfFontPromise;
+        var loads = [
+          loadPdfVfsFont('NotoSans-Regular.ttf', 'NotoSans', 'NotoSans-Regular.ttf'),
+          loadPdfVfsFont('NotoSans-Bold.ttf', 'NotoSans', 'NotoSans-Bold.ttf'),
+          loadPdfVfsFont('NotoSans-Italic.ttf', 'NotoSans', 'NotoSans-Italic.ttf'),
+          loadPdfVfsFont('NotoSans-BoldItalic.ttf', 'NotoSans', 'NotoSans-BoldItalic.ttf'),
+          loadPdfVfsFont('NotoSerif-Regular.ttf', 'NotoSerif', 'NotoSerif-Regular.ttf'),
+          loadPdfVfsFont('NotoSerif-Bold.ttf', 'NotoSerif', 'NotoSerif-Bold.ttf'),
+          loadPdfVfsFont('NotoSerif-Italic.ttf', 'NotoSerif', 'NotoSerif-Italic.ttf'),
+          loadPdfVfsFont('NotoSerif-BoldItalic.ttf', 'NotoSerif', 'NotoSerif-BoldItalic.ttf')
+        ];
+        smetaPdfFontPromise = Promise.all(loads).then(function () {
+          pdfMake.fonts = Object.assign({}, pdfMake.fonts || {}, {
+            Arial: {
+              normal: 'NotoSans-Regular.ttf',
+              bold: 'NotoSans-Bold.ttf',
+              italics: 'NotoSans-Italic.ttf',
+              bolditalics: 'NotoSans-BoldItalic.ttf'
+            },
+            TimesNewRoman: {
+              normal: 'NotoSerif-Regular.ttf',
+              bold: 'NotoSerif-Bold.ttf',
+              italics: 'NotoSerif-Italic.ttf',
+              bolditalics: 'NotoSerif-BoldItalic.ttf'
+            }
+          });
+        });
+        return smetaPdfFontPromise;
+      }
+
+      function smetaPdfFontForCol(col) {
+        return (col <= 3 || col === 8) ? PDF_FONT_TNR : PDF_FONT_ARIAL;
+      }
+
+      var SMETA_PDF_PAGE = { size: 'A4', orientation: 'landscape', widthPt: 841.89 };
+      var SMETA_PDF_MARGINS = [8, 12, 8, 12];
+      var SMETA_PDF_HEADERS = [
+        'Перечень работ и материалов',
+        'Ед.\nизм.',
+        'Стоим.\nобор-ия',
+        'Кол-\nво',
+        'Стоим.\nработ',
+        'Работы\nс обор.',
+        'Сумма\nруб. РФ',
+        'Примечания'
+      ];
+
+      function smetaPdfContentWidth() {
+        return Math.floor(SMETA_PDF_PAGE.widthPt - SMETA_PDF_MARGINS[0] - SMETA_PDF_MARGINS[2]);
+      }
+
+      /** Доли ширины: перечень, ед., обор., кол-во, работы, с обор., сумма, примечания */
+      function smetaPdfTableWidths(contentWidth) {
+        var weights = [30, 4, 7, 4, 7, 8, 7, 33];
+        var sum = 0;
+        weights.forEach(function (w) { sum += w; });
+        var widths = weights.map(function (w) {
+          return Math.round(contentWidth * w / sum);
+        });
+        var used = widths.reduce(function (a, b) { return a + b; }, 0);
+        widths[0] += contentWidth - used;
+        return widths;
+      }
+
+      function smetaPdfTextCell(col, text, extra) {
+        var o = {
+          text: text == null ? '' : String(text),
+          font: smetaPdfFontForCol(col),
+          fontSize: PDF_FONT_SIZE_BODY,
+          alignment: (col >= 3 && col <= 7) ? 'center' : 'left'
+        };
+        if (extra) {
+          Object.keys(extra).forEach(function (k) { o[k] = extra[k]; });
+        }
+        return o;
+      }
+
+      function itemNamePdfStack(rowKey, row) {
+        var bullets = getRowBullets(rowKey, row);
+        var stack = [{
+          text: getRowTitle(rowKey, row).toUpperCase(),
+          font: PDF_FONT_TNR,
+          fontSize: PDF_FS_TITLE,
+          bold: true,
+          alignment: 'left',
+          lineHeight: 0.92,
+          margin: bullets.length ? [0, 0, 0, 1] : [0, 0, 0, 0]
+        }];
+        bullets.forEach(function (t, i) {
+          stack.push({
+            text: (i + 1) + '. ' + t,
+            font: PDF_FONT_TNR,
+            fontSize: PDF_FS_BULLET,
+            bold: true,
+            italics: true,
+            alignment: 'left',
+            lineHeight: 0.9,
+            margin: [0, 0, 0, i < bullets.length - 1 ? 0.5 : 0]
+          });
+        });
+        return { stack: stack };
+      }
+
+      function cellTextOrInput(value, field, inputType, inputAttrs) {
+        if (!smetaState.editMode) {
+          return escapeHtml(value === '' ? '' : String(value));
+        }
+        var attrs = inputAttrs || '';
+        return '<input class="smeta-cell-input" type="' + (inputType || 'text') + '" data-smeta-field="' + field + '" value="' +
+          escapeHtml(value === '' ? '' : String(value)) + '" ' + attrs + ' />';
+      }
+
+      function equipCellHtml(row) {
+        if (!smetaState.editMode) {
+          if (row.equipCost === '--') return '--';
+          var n = parseNum(row.equipCost);
+          return n != null ? fmtMoney(n) : escapeHtml(row.equipCost);
+        }
+        return cellTextOrInput(row.equipCost === '--' ? '--' : row.equipCost, 'equipCost', 'text');
+      }
+
+      function equipCellPdf(row) {
+        if (row.equipCost === '--') return '--';
+        return fmtMoney(parseNum(row.equipCost));
+      }
+
+      function renderSmetaDataRow(sectionKey, rowKey, row) {
+        var sum = displayLineSum(sectionKey, rowKey, row);
+        var notesBold = SMETA_ROWS[rowKey].position0 ? ' smeta-notes-bold' : '';
+        var sumId = sectionKey + ':' + rowKey;
+        var qtyVal = smetaRowQtyDisplay(sectionKey, rowKey, row);
+        var qtyStep = (rowKey === 'sandHaul' || rowKey === 'concrete') ? 'min="0" step="1"' : 'min="0" step="0.1"';
+        return '<tr class="row-data' + (SMETA_ROWS[rowKey].position0 ? ' row-position0' : '') +
+          '" data-section="' + sectionKey + '" data-row="' + rowKey + '">' +
+          '<td class="col-name">' + itemNameHtml(sectionKey, rowKey, row) + '</td>' +
+          '<td class="col-unit">' + cellTextOrInput(row.unit, 'unit', 'text') + '</td>' +
+          '<td class="col-equip">' + equipCellHtml(row) + '</td>' +
+          '<td class="col-qty">' + cellTextOrInput(qtyVal, 'qty', 'number', qtyStep) + '</td>' +
+          '<td class="col-work">' + cellTextOrInput(row.workCost, 'workCost', 'number', 'min="0" step="100"') + '</td>' +
+          '<td class="col-work-total">' + cellTextOrInput(row.workCostWithEquip, 'workCostWithEquip', 'number', 'min="0" step="100"') + '</td>' +
+          '<td class="col-sum smeta-sum-cell" data-row-sum="' + sumId + '">' + fmtMoney(sum) + '</td>' +
+          '<td class="col-notes' + notesBold + '">' +
+          (smetaState.editMode
+            ? '<textarea class="smeta-cell-input smeta-notes-input" data-smeta-field="notes" rows="2">' + escapeHtml(row.notes) + '</textarea>'
+            : escapeHtml(row.notes)) +
+          '</td></tr>';
+      }
+
+      function applySmetaEditModeUi() {
+        if (tableWrap) tableWrap.classList.toggle('smeta-edit-unlocked', smetaState.editMode);
+        if (editToggleBtn) {
+          editToggleBtn.classList.toggle('is-active', smetaState.editMode);
+          editToggleBtn.textContent = smetaState.editMode ? 'Режим правки: ВКЛ' : 'Режим правки';
+        }
+      }
+
+      function renderSmetaTable() {
+        syncAllHaulSandRows();
+        ['drain', 'storm', 'apron'].forEach(function (sk) {
+          var sec = smetaState.sections[sk];
+          SMETA_ROW_ORDER.forEach(function (key) {
+            if (!sec[key]) sec[key] = createRow(key);
+          });
+          var del = sec.delivery;
+          if (del && (del.qty === '' || del.qty == null)) del.qty = '1';
+        });
+        if (!tbody) return;
+        if (!smetaHasAnyContent()) {
+          tbody.innerHTML = '<tr class="row-section-title">' +
+            '<td class="col-name">Начните заполнять колонки слева — смета соберётся одной общей: дренаж, затем отмостка, затем ливнёвка.</td>' +
+            '<td class="col-unit"></td><td class="col-equip"></td><td class="col-qty"></td>' +
+            '<td class="col-work"></td><td class="col-work-total"></td>' +
+            '<td class="col-sum"></td><td class="col-notes"></td></tr>';
+          applySmetaEditModeUi();
+          return;
+        }
+        var html = '';
+        SMETA_SECTIONS.forEach(function (sk) {
+          html += renderSmetaSectionBlockHtml(sk);
+        });
+        html += '<tr class="row-section-title row-grand-total">' +
+          '<td class="col-name" style="color:#111;font-weight:700">ИТОГО ПО СМЕТЕ</td>' +
+          '<td class="col-unit"></td><td class="col-equip"></td><td class="col-qty"></td>' +
+          '<td class="col-work"></td><td class="col-work-total"></td>' +
+          '<td class="col-sum smeta-grand-total">' + fmtMoney(combinedSmetaTotal()) + '</td>' +
+          '<td class="col-notes smeta-notes-bold"></td></tr>';
+        html += renderSmetaHaulSummaryRowHtml();
+        tbody.innerHTML = html;
+        applySmetaEditModeUi();
+        bindSmetaInputs();
+        bindSmetaHideButtons();
+        renderHiddenPanel();
+      }
+
+      function renderHiddenPanel() {
+        if (!hiddenWrap || !hiddenList) return;
+        var items = [];
+        SMETA_SECTIONS.forEach(function (sk) {
+          if (!sectionHasTableBlock(sk)) return;
+          var sec = smetaState.sections[sk];
+          getVisibleRowKeys(sk).forEach(function (key) {
+            if (sec[key].hidden) {
+              items.push({ sk: sk, key: key, row: sec[key] });
+            }
+          });
+        });
+        hiddenWrap.classList.toggle('is-empty', items.length === 0);
+        if (!items.length) {
+          hiddenList.innerHTML = '';
+          return;
+        }
+        hiddenList.innerHTML = items.map(function (it) {
+          return '<li><span class="smeta-hidden-tag">' + escapeHtml(SECTION_TITLES[it.sk]) + '</span> ' +
+            '<span>' + escapeHtml(rowShortLabel(it.key, it.row)) + '</span>' +
+            '<button type="button" class="smeta-hidden-restore" data-smeta-restore-section="' + it.sk +
+            '" data-smeta-restore="' + it.key + '">Вернуть в смету</button></li>';
+        }).join('');
+        hiddenList.querySelectorAll('[data-smeta-restore]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var rsk = btn.getAttribute('data-smeta-restore-section');
+            var rkey = btn.getAttribute('data-smeta-restore');
+            smetaState.sections[rsk][rkey].hidden = false;
+            renderSmetaTable();
+          });
+        });
+      }
+
+      function bindSmetaHideButtons() {
+        if (!tbody) return;
+        tbody.querySelectorAll('[data-smeta-hide]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var sk = btn.getAttribute('data-smeta-section');
+            var key = btn.getAttribute('data-smeta-hide');
+            smetaState.sections[sk][key].hidden = true;
+            renderSmetaTable();
+          });
+        });
+      }
+
+      function refreshSmetaTotals() {
+        SMETA_SECTIONS.forEach(function (sk) {
+          if (!sectionHasTableBlock(sk)) return;
+          var sec = smetaState.sections[sk];
+          getVisibleRowKeys(sk).forEach(function (key) {
+            var row = sec[key];
+            if (!row || row.hidden) return;
+            var cell = tbody.querySelector('[data-row-sum="' + sk + ':' + key + '"]');
+            if (cell) cell.textContent = fmtMoney(displayLineSum(sk, key, row));
+          });
+        });
+        var grandCell = tbody.querySelector('.smeta-grand-total');
+        if (grandCell) grandCell.textContent = fmtMoney(combinedSmetaTotal());
+      }
+
+      function bindSmetaInputs() {
+        if (!tbody || !smetaState.editMode) return;
+        tbody.querySelectorAll('[data-smeta-field]').forEach(function (inp) {
+          inp.addEventListener('input', function () {
+            var tr = inp.closest('[data-row]');
+            if (!tr) return;
+            var rowKey = tr.getAttribute('data-row');
+            var sk = tr.getAttribute('data-section');
+            var row = smetaState.sections[sk][rowKey];
+            var f = inp.getAttribute('data-smeta-field');
+            if (f === 'inlineTitle' || f === 'inlineBullets') {
+              syncInlineTextFields(rowKey, row, f, inp.value);
+              return;
+            }
+            if (f === 'equipCost') {
+              var raw = inp.value.trim();
+              row.equipCost = raw === '--' ? '--' : (parseNum(raw) != null ? parseNum(raw) : raw);
+            } else if (f === 'workCost' || f === 'workCostWithEquip') {
+              row[f] = inp.value === '' ? 0 : (parseNum(inp.value) != null ? parseNum(inp.value) : inp.value);
+            } else {
+              row[f] = inp.value;
+            }
+            refreshSmetaTotals();
+          });
+        });
+      }
+
+      if (editToggleBtn) {
+        editToggleBtn.addEventListener('click', function () {
+          smetaState.editMode = !smetaState.editMode;
+          renderSmetaTable();
+        });
+      }
+
+      function smetaRowPdfCells(sectionKey, rowKey, row) {
+        var sum = displayLineSum(sectionKey, rowKey, row);
+        var notesExtra = { fontSize: PDF_FONT_SIZE_BODY, alignment: 'left' };
+        if (SMETA_ROWS[rowKey].position0) notesExtra.bold = true;
+        var qtyPdf = smetaRowQtyDisplay(sectionKey, rowKey, row);
+        return [
+          itemNamePdfStack(rowKey, row),
+          smetaPdfTextCell(2, row.unit),
+          smetaPdfTextCell(3, equipCellPdf(row)),
+          smetaPdfTextCell(4, qtyPdf !== '' ? qtyPdf : ''),
+          smetaPdfTextCell(5, fmtMoney(parseNum(row.workCost))),
+          smetaPdfTextCell(6, fmtMoney(parseNum(row.workCostWithEquip))),
+          smetaPdfTextCell(7, fmtMoney(sum), { bold: false }),
+          smetaPdfTextCell(8, row.notes, notesExtra)
+        ];
+      }
+
+      function setActiveSection(sk) {
+        smetaState.activeSection = sk;
+        updateSmetaSectionChips();
+        scrollToSmetaSection(sk);
+      }
+
+      function appendSmetaSectionPdfRows(tableBody, sk) {
+        if (!sectionHasTableBlock(sk)) return;
+        var sec = smetaState.sections[sk];
+        tableBody.push([
+          {
+            text: SECTION_TITLES[sk],
+            font: PDF_FONT_TNR,
+            color: '#c00000',
+            bold: true,
+            fontSize: PDF_FS_TITLE,
+            alignment: 'left'
+          },
+          smetaPdfTextCell(2, ''),
+          smetaPdfTextCell(3, ''),
+          smetaPdfTextCell(4, ''),
+          smetaPdfTextCell(5, ''),
+          smetaPdfTextCell(6, ''),
+          smetaPdfTextCell(7, ''),
+          smetaPdfTextCell(8, '')
+        ]);
+          SMETA_ROW_ORDER.forEach(function (key) {
+            if (!sec[key].hidden && shouldShowSmetaRow(sk, key)) {
+              tableBody.push(smetaRowPdfCells(sk, key, sec[key]));
+            }
+          });
+      }
+
+      document.querySelectorAll('[data-smeta-section]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setActiveSection(btn.getAttribute('data-smeta-section'));
+        });
+      });
+
+      var DOP_LIB = {
+        pdfmake: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js',
+        vfs: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.min.js',
+        exceljs: 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'
+      };
+
+      function loadExternalScript(url) {
+        return new Promise(function (resolve, reject) {
+          var mark = 'data-dop-lib="' + url + '"';
+          var existing = document.querySelector('script[' + mark + ']');
+          if (existing) {
+            if (existing.getAttribute('data-dop-ready') === '1') return resolve();
+            existing.addEventListener('load', function () { resolve(); });
+            existing.addEventListener('error', function () { reject(new Error(url)); });
+            return;
+          }
+          var s = document.createElement('script');
+          s.src = url;
+          s.setAttribute('data-dop-lib', url);
+          s.onload = function () { s.setAttribute('data-dop-ready', '1'); resolve(); };
+          s.onerror = function () { reject(new Error(url)); };
+          document.head.appendChild(s);
+        });
+      }
+
+      function loadExternalScriptFallback(urls) {
+        var list = Array.isArray(urls) ? urls : [urls];
+        var i = 0;
+        function next() {
+          if (i >= list.length) return Promise.reject(new Error('all failed'));
+          return loadExternalScript(list[i]).catch(function () { i += 1; return next(); });
+        }
+        return next();
+      }
+
+      function ensurePdfMakeLibs() {
+        if (typeof pdfMake !== 'undefined') return Promise.resolve();
+        return loadExternalScript(DOP_LIB.pdfmake).then(function () {
+          return loadExternalScript(DOP_LIB.vfs);
+        });
+      }
+
+      function ensureExcelJsLib() {
+        if (typeof ExcelJS !== 'undefined') return Promise.resolve();
+        return loadExternalScript(DOP_LIB.exceljs);
+      }
+
+      function buildSmetaPdf() {
+        ensurePdfMakeLibs().then(function () {
+          return ensureSmetaPdfFonts();
+        }).then(function () {
+          if (!ensureSmetaReadyForExport()) {
+            alert('Сначала заполните хотя бы один раздел (Дренаж, Отмостка или Ливнёвка).');
+            return;
+          }
+          var tableBody = [
+            SMETA_PDF_HEADERS.map(function (h) {
+              return {
+                text: h,
+                font: PDF_FONT_ARIAL,
+                bold: true,
+                fontSize: PDF_FS_HEADER,
+                decoration: 'underline',
+                alignment: 'center',
+                lineHeight: 0.9,
+                margin: [0, 0, 0, 0]
+              };
+            })
+          ];
+          SMETA_SECTIONS.forEach(function (sk) {
+            appendSmetaSectionPdfRows(tableBody, sk);
+          });
+          tableBody.push([
+            {
+              text: 'ИТОГО ПО СМЕТЕ',
+              font: PDF_FONT_TNR,
+              bold: true,
+              fontSize: PDF_FS_TOTAL,
+              alignment: 'left'
+            },
+            smetaPdfTextCell(2, ''),
+            smetaPdfTextCell(3, ''),
+            smetaPdfTextCell(4, ''),
+            smetaPdfTextCell(5, ''),
+            smetaPdfTextCell(6, ''),
+            {
+              text: fmtMoney(combinedSmetaTotal()),
+              font: PDF_FONT_ARIAL,
+              fontSize: PDF_FS_TOTAL,
+              bold: true,
+              alignment: 'center'
+            },
+            smetaPdfTextCell(8, '')
+          ]);
+          var d = new Date();
+          var dateStr = ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear();
+          var tableWidth = smetaPdfContentWidth();
+          var colWidths = smetaPdfTableWidths(tableWidth);
+          var docDef = {
+            pageSize: SMETA_PDF_PAGE.size,
+            pageOrientation: SMETA_PDF_PAGE.orientation,
+            pageMargins: SMETA_PDF_MARGINS,
+            content: [
+              {
+                table: {
+                  headerRows: 0,
+                  widths: colWidths,
+                  body: tableBody,
+                  dontBreakRows: true
+                },
+                width: tableWidth,
+                layout: {
+                  hLineWidth: function () { return 0.5; },
+                  vLineWidth: function () { return 0.5; },
+                  hLineColor: function () { return '#000000'; },
+                  vLineColor: function () { return '#000000'; },
+                  paddingLeft: function () { return 1; },
+                  paddingRight: function () { return 1; },
+                  paddingTop: function () { return 1; },
+                  paddingBottom: function () { return 1; }
+                }
+              }
+            ],
+            defaultStyle: { font: PDF_FONT_ARIAL, fontSize: PDF_FONT_SIZE_BODY, alignment: 'center' }
+          };
+          var fileDate = dateStr.replace(/\./g, '-');
+          pdfMake.createPdf(docDef).download('smeta_' + fileDate + '.pdf');
+        }).catch(function () {
+          smetaPdfFontPromise = null;
+          alert('Не удалось подготовить PDF. Проверьте интернет (раздача с телефона) и обновите страницу.');
+        });
+      }
+
+      function smetaFileDateSlug() {
+        var d = new Date();
+        return ('0' + d.getDate()).slice(-2) + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + d.getFullYear();
+      }
+
+      function smetaSectionFileSlug(sk) {
+        return { drain: 'drenazh', storm: 'livnevka', apron: 'otmostka' }[sk] || 'smeta';
+      }
+
+      function excelCellNum(row, field) {
+        if (field === 'equipCost' && row.equipCost === '--') return '--';
+        var n = parseNum(row[field]);
+        return n != null ? n : (row[field] === '' || row[field] == null ? '' : row[field]);
+      }
+
+      function excelBorderAll() {
+        var e = { style: 'thin', color: { argb: 'FF000000' } };
+        return { top: e, left: e, bottom: e, right: e };
+      }
+
+      function styleExcelCell(cell, opts) {
+        var o = opts || {};
+        cell.border = excelBorderAll();
+        cell.alignment = {
+          vertical: 'top',
+          wrapText: o.wrapText !== false,
+          horizontal: o.horizontal || 'left'
+        };
+        if (o.font) cell.font = o.font;
+        if (o.fill) cell.fill = o.fill;
+        if (o.numFmt) cell.numFmt = o.numFmt;
+      }
+
+      function excelRichNameValue(rowKey, row) {
+        var title = getRowTitle(rowKey, row).toUpperCase();
+        var bullets = getRowBullets(rowKey, row);
+        var parts = [{
+          text: title + (bullets.length ? '\n' : ''),
+          font: { name: 'Times New Roman', size: 12, bold: true, color: { argb: 'FF000000' } }
+        }];
+        bullets.forEach(function (t, i) {
+          parts.push({
+            text: (i + 1) + '. ' + t + (i < bullets.length - 1 ? '\n' : ''),
+            font: { name: 'Times New Roman', size: 7, bold: true, italic: true, color: { argb: 'FF000000' } }
+          });
+        });
+        return { richText: parts };
+      }
+
+      function buildSmetaExcel() {
+        ensureExcelJsLib().then(function () {
+        if (!ensureSmetaReadyForExport()) {
+          alert('Сначала заполните хотя бы один раздел (Дренаж, Отмостка или Ливнёвка).');
+          return;
+        }
+        var headers = [
+          'Перечень работ и материалов',
+          'Ед. Изм.',
+          'Стоимость обор-ия',
+          'Кол-во',
+          'Стоимость работ',
+          'Стоимость работ с обор-ем',
+          'Сумма в руб. РФ',
+          'Примечания'
+        ];
+        var sheetName = 'Смета';
+        var wb = new ExcelJS.Workbook();
+        var sheet = wb.addWorksheet(sheetName, {
+          views: [{ state: 'frozen', ySplit: 1 }]
+        });
+        sheet.columns = [
+          { width: 52 },
+          { width: 8 },
+          { width: 14 },
+          { width: 8 },
+          { width: 14 },
+          { width: 16 },
+          { width: 14 },
+          { width: 36 }
+        ];
+        var headerFont = { name: 'Arial', size: 14, bold: true, underline: true, color: { argb: 'FF000000' } };
+        var sectionFont = { name: 'Times New Roman', size: 12, bold: true, color: { argb: 'FFC00000' } };
+        var fontTnr = { name: 'Times New Roman', size: 9, color: { argb: 'FF000000' } };
+        var fontArial = { name: 'Arial', size: 9, color: { argb: 'FF000000' } };
+        function excelFontForCol(col) {
+          return (col <= 3 || col === 8) ? fontTnr : fontArial;
+        }
+        var r = 1;
+        headers.forEach(function (h, ci) {
+          var cell = sheet.getCell(r, ci + 1);
+          cell.value = h;
+          styleExcelCell(cell, {
+            font: headerFont,
+            horizontal: 'center',
+            wrapText: true
+          });
+        });
+        SMETA_SECTIONS.forEach(function (sk) {
+          if (!sectionHasTableBlock(sk)) return;
+          var sec = smetaState.sections[sk];
+          r++;
+          var sectionRow = sheet.getRow(r);
+          sectionRow.getCell(1).value = SECTION_TITLES[sk];
+          styleExcelCell(sectionRow.getCell(1), { font: sectionFont });
+          for (var c = 2; c <= 8; c++) {
+            styleExcelCell(sectionRow.getCell(c), { font: excelFontForCol(c), horizontal: c >= 3 && c <= 7 ? 'center' : 'left' });
+          }
+          SMETA_ROW_ORDER.forEach(function (key) {
+            if (sec[key].hidden || !shouldShowSmetaRow(sk, key)) return;
+            r++;
+            var row = sec[key];
+            var dataRow = sheet.getRow(r);
+            var nameCell = dataRow.getCell(1);
+            nameCell.value = excelRichNameValue(key, row);
+            styleExcelCell(nameCell, { wrapText: true, horizontal: 'left' });
+            dataRow.getCell(2).value = row.unit || '';
+            var ec = excelCellNum(row, 'equipCost');
+            dataRow.getCell(3).value = ec === '--' ? '--' : (typeof ec === 'number' ? ec : ec);
+            var q = smetaRowQtyDisplay(sk, key, row);
+            q = q !== '' ? (parseNum(q) != null ? parseNum(q) : q) : '';
+            dataRow.getCell(4).value = q === '' ? '' : (typeof q === 'number' ? q : q);
+            dataRow.getCell(5).value = excelCellNum(row, 'workCost');
+            dataRow.getCell(6).value = excelCellNum(row, 'workCostWithEquip');
+            var lineSumVal = displayLineSum(sk, key, row);
+            dataRow.getCell(7).value = lineSumVal === '' ? '' : lineSumVal;
+            dataRow.getCell(8).value = row.notes || '';
+            for (var col = 2; col <= 8; col++) {
+              var dc = dataRow.getCell(col);
+              styleExcelCell(dc, {
+                font: excelFontForCol(col),
+                horizontal: col >= 3 && col <= 7 ? 'center' : 'left',
+                wrapText: col === 8
+              });
+              if (col >= 3 && col <= 7 && typeof dc.value === 'number') dc.numFmt = '#,##0';
+            }
+          });
+        });
+        r++;
+        var grandRow = sheet.getRow(r);
+        grandRow.getCell(1).value = 'ИТОГО ПО СМЕТЕ';
+        styleExcelCell(grandRow.getCell(1), { font: { name: 'Times New Roman', size: 12, bold: true } });
+        var grandSum = grandRow.getCell(7);
+        grandSum.value = combinedSmetaTotal();
+        grandSum.numFmt = '#,##0';
+        styleExcelCell(grandSum, { font: { name: 'Arial', size: 11, bold: true }, horizontal: 'center' });
+        wb.xlsx.writeBuffer().then(function (buffer) {
+          var blob = new Blob([buffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'smeta_' + smetaFileDateSlug() + '.xlsx';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        }).catch(function () {
+          alert('Не удалось сохранить файл Excel.');
+        });
+        }).catch(function () {
+          alert('Не удалось подготовить Excel. Проверьте интернет (раздача с телефона) и обновите страницу.');
+        });
+      }
+
+      var pdfBtn = document.getElementById('materials-download-btn');
+      if (pdfBtn) pdfBtn.addEventListener('click', buildSmetaPdf);
+      var excelBtn = document.getElementById('materials-excel-btn');
+      if (excelBtn) excelBtn.addEventListener('click', buildSmetaExcel);
+
+      var apronRoot = document.getElementById('apron-wizard-root');
+      var APRON_LABELS = {
+        coating: { soft: 'Мягкая', concrete: 'Твердая' },
+        yesno: { yes: 'Да', no: 'Нет' }
+      };
+
+      function apronOptBtn(group, value, label, selected) {
+        return '<button type="button" class="drain-opt-btn' + (selected ? ' is-selected' : '') +
+          '" data-apron-set="' + group + '" data-apron-value="' + value + '">' + label + '</button>';
+      }
+
+      function apronToggleBtn(field, label, selected) {
+        return '<button type="button" class="drain-opt-btn' + (selected ? ' is-selected' : '') +
+          '" data-apron-toggle="' + field + '">' + label + '</button>';
+      }
+
+      function renderApronPerimeterStep() {
+        var cls = apronPerimeterMeters() != null ? 'is-done' : 'is-active';
+        var p = apronPerimeterMeters();
+        var html = '<div class="drain-wizard-step ' + cls + '" data-apron-step="perimeter">' +
+          '<p class="drain-wizard-q">Какой периметр отмостки?</p>';
+        if (p != null) html += '<p class="drain-wizard-ans">' + p + ' м</p>';
+        html += '<div class="drain-wizard-opts" style="margin-bottom:0.35rem">' +
+          apronOptBtn('perimeterMode', 'direct', 'Периметром', apronState.perimeterMode === 'direct') +
+          apronOptBtn('perimeterMode', 'dimensions', 'Длина × ширина', apronState.perimeterMode === 'dimensions') +
+          '</div>';
+        if (apronState.perimeterMode === 'direct') {
+          html += '<div class="drain-wizard-field">' +
+            '<label for="apron-perimeter">Периметр, м</label>' +
+            '<input type="number" id="apron-perimeter" min="0" step="0.1" placeholder="Например: 48" value="' +
+            (apronState.perimeterM || '') + '" data-apron-input="perimeterM" />' +
+            '</div>';
+        } else {
+          html += '<div class="drain-wizard-row-2">' +
+            '<div class="drain-wizard-field"><label for="apron-len">Длина, м</label>' +
+            '<input type="number" id="apron-len" min="0" step="0.1" value="' + (apronState.houseLengthM || '') +
+            '" data-apron-input="houseLengthM" /></div>' +
+            '<div class="drain-wizard-field"><label for="apron-wid">Ширина, м</label>' +
+            '<input type="number" id="apron-wid" min="0" step="0.1" value="' + (apronState.houseWidthM || '') +
+            '" data-apron-input="houseWidthM" /></div></div>' +
+            '<p class="drain-wizard-hint">Периметр считается: 2 × (длина + ширина).</p>';
+        }
+        html += '</div>';
+        return html;
+      }
+
+      function renderApronCoatingStep() {
+        var cls = apronState.coating ? 'is-done' : 'is-active';
+        var ans = apronState.coating ? APRON_LABELS.coating[apronState.coating] : '';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-apron-step="coating">' +
+          '<p class="drain-wizard-q">Мягкая или твердая отмостка?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        html += '<div class="drain-wizard-opts">' +
+          apronOptBtn('coating', 'soft', 'Мягкая', apronState.coating === 'soft') +
+          apronOptBtn('coating', 'concrete', 'Твердая', apronState.coating === 'concrete') +
+          '</div></div>';
+        return html;
+      }
+
+      function renderApronWidthStep() {
+        var w = numVal(apronState.stripWidthM);
+        var shownW = (w != null ? w : '');
+        var cls = 'is-active';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-apron-step="width">' +
+          '<p class="drain-wizard-q">Ширина отмостки, м</p>' +
+          '<div class="drain-wizard-field">' +
+          '<label for="apron-strip-width">Ширина, м</label>' +
+          '<input type="number" id="apron-strip-width" min="0" step="0.1" placeholder="Если до 1 м — можно не вводить" value="' +
+          shownW + '" data-apron-input="stripWidthM" />' +
+          '</div>' +
+          '<p class="drain-wizard-hint">Если ширина не указана или ≤ 1 м — считаем как 1 м. Если > 1 м — объём считается пропорционально: Периметр × Ширина × Толщина слоя.</p>' +
+          '</div>';
+        return html;
+      }
+
+      function renderApronFinishStep() {
+        if (apronState.coating !== 'soft') return '';
+        var cls = apronState.finish ? 'is-done' : 'is-active';
+        var ans = apronState.finish ? APRON_LABELS.yesno[apronState.finish] : '';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-apron-step="finish">' +
+          '<p class="drain-wizard-q">Финишный слой щебня 5 см нужен?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        html += '<div class="drain-wizard-opts">' +
+          apronOptBtn('finish', 'yes', 'Да', apronState.finish === 'yes') +
+          apronOptBtn('finish', 'no', 'Нет', apronState.finish === 'no') +
+          '</div></div>';
+        return html;
+      }
+
+      function renderApronHaulStep() {
+        if (!apronState.coating || apronPerimeterMeters() == null) return '';
+        var cls = apronState.haulSand ? 'is-done' : 'is-active';
+        var ans = apronState.haulSand === 'yes' ? 'Да, в смете' : (apronState.haulSand === 'no' ? 'Нет' : '');
+        var parts = calcApronHaulParts();
+        var html = '<div class="drain-wizard-step ' + cls + '" data-apron-step="haul">' +
+          '<p class="drain-wizard-q">Включить подвоз песка и щебня вручную?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        html += '<div class="drain-wizard-opts">' +
+          apronOptBtn('haulSand', 'yes', 'Да', apronState.haulSand === 'yes') +
+          apronOptBtn('haulSand', 'no', 'Нет', apronState.haulSand === 'no') +
+          '</div>';
+        if (parts && parts.total > 0) {
+          html += '<p class="drain-wizard-hint">' +
+            'В стандартную стоимость входит подвоз до 50 м от места выгрузки. Расстояние более 50 м — отдельное согласование.' +
+            '</p>';
+        }
+        html += '</div>';
+        return html;
+      }
+
+      function renderApronSoftExtrasStep() {
+        var cls = apronState.demolition ? 'is-done' : 'is-active';
+        var bits = [];
+        if (apronState.border) bits.push('бордюр');
+        if (apronState.slate) bits.push('шифер');
+        var html = '<div class="drain-wizard-step ' + cls + '" data-apron-step="soft-extras">' +
+          '<p class="drain-wizard-q">Что добавить к мягкой отмостке?</p>';
+        if (bits.length) html += '<p class="drain-wizard-ans">' + bits.join(', ') + '</p>';
+        html += '<p class="drain-wizard-hint">Можно выбрать оба пункта — каждый появится в смете.</p>' +
+          '<div class="drain-wizard-opts">' +
+          apronToggleBtn('border', 'Бордюр', apronState.border) +
+          apronToggleBtn('slate', 'Шифер', apronState.slate) +
+          '</div></div>';
+        return html;
+      }
+
+      function renderApronInsulationStep() {
+        var cls = apronState.insulation ? 'is-done' : 'is-active';
+        var ans = apronState.insulation ? APRON_LABELS.yesno[apronState.insulation] : '';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-apron-step="insulation">' +
+          '<p class="drain-wizard-q">Нужно утепление отмостки?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        html += '<div class="drain-wizard-opts">' +
+          apronOptBtn('insulation', 'yes', 'Да', apronState.insulation === 'yes') +
+          apronOptBtn('insulation', 'no', 'Нет', apronState.insulation === 'no') +
+          '</div></div>';
+        return html;
+      }
+
+      function renderApronParkingDriveStep() {
+        if (apronState.coating !== 'concrete') return '';
+        var cls = apronState.parkingDriveConcrete ? 'is-done' : 'is-active';
+        var ans = apronState.parkingDriveConcrete ? APRON_LABELS.yesno[apronState.parkingDriveConcrete] : '';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-apron-step="parkingDriveConcrete">' +
+          '<p class="drain-wizard-q">Добавить «Парковка/заезд (бетон)» в смету?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        html += '<div class="drain-wizard-opts">' +
+          apronOptBtn('parkingDriveConcrete', 'yes', 'Да', apronState.parkingDriveConcrete === 'yes') +
+          apronOptBtn('parkingDriveConcrete', 'no', 'Нет', apronState.parkingDriveConcrete === 'no') +
+          '</div>' +
+          '<p class="drain-wizard-hint">По умолчанию позиция не добавляется. Если включить — строка появится в смете, количество (м²) можно указать вручную.</p>' +
+          '</div>';
+        return html;
+      }
+
+      function renderApronDemolitionStep() {
+        var cls = apronState.demolition ? 'is-done' : 'is-active';
+        var ans = apronState.demolition ? APRON_LABELS.yesno[apronState.demolition] : '';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-apron-step="demolition">' +
+          '<p class="drain-wizard-q">Нужен демонтаж старой отмостки?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        html += '<div class="drain-wizard-opts">' +
+          apronOptBtn('demolition', 'yes', 'Да', apronState.demolition === 'yes') +
+          apronOptBtn('demolition', 'no', 'Нет', apronState.demolition === 'no') +
+          '</div></div>';
+        return html;
+      }
+
+      function renderApronWizard() {
+        if (!apronRoot) return;
+        var html = '<div class="drain-wizard">' +
+          renderApronPerimeterStep() +
+          renderApronCoatingStep() +
+          renderApronWidthStep() +
+          renderApronFinishStep() +
+          renderApronHaulStep();
+        if (apronState.coating === 'soft') {
+          html += renderApronSoftExtrasStep();
+          html += renderApronDemolitionStep();
+        } else if (apronState.coating === 'concrete') {
+          html += renderApronInsulationStep();
+          html += renderApronParkingDriveStep();
+          html += renderApronDemolitionStep();
+        }
+        html += '<button type="button" class="drain-wizard-reset" id="apron-wizard-reset">Сбросить отмостку</button></div>';
+        apronRoot.innerHTML = html;
+        bindApronWizardEvents();
+        // Смета появляется только после выбора раздела/действия пользователя
+        renderSmetaTable();
+      }
+
+      function bindApronWizardEvents() {
+        if (!apronRoot) return;
+        apronRoot.querySelectorAll('[data-apron-set]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activateSmetaSection('apron');
+            var group = btn.getAttribute('data-apron-set');
+            var val = btn.getAttribute('data-apron-value');
+            if (group === 'coating') setApronCoating(val);
+            else if (group === 'perimeterMode') apronState.perimeterMode = val;
+            else apronState[group] = val;
+            onApronConfigChanged(false);
+            renderApronWizard();
+          });
+        });
+        apronRoot.querySelectorAll('[data-apron-input]').forEach(function (inp) {
+          inp.addEventListener('input', function () {
+            activateSmetaSection('apron');
+            var field = inp.getAttribute('data-apron-input');
+            apronState[field] = inp.value;
+            onApronConfigChanged(false);
+          });
+          inp.addEventListener('change', function () {
+            renderApronWizard();
+          });
+        });
+        apronRoot.querySelectorAll('[data-apron-toggle]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activateSmetaSection('apron');
+            var field = btn.getAttribute('data-apron-toggle');
+            apronState[field] = !apronState[field];
+            onApronConfigChanged(false);
+            renderApronWizard();
+          });
+        });
+        var resetBtn = document.getElementById('apron-wizard-reset');
+        if (resetBtn) {
+          resetBtn.addEventListener('click', function () {
+            resetApronState();
+            onApronConfigChanged(false);
+            renderApronWizard();
+          });
+        }
+      }
+
+      var stormRoot = document.getElementById('storm-wizard-root');
+
+      function stormOptBtn(group, value, label, selected) {
+        return '<button type="button" class="drain-opt-btn' + (selected ? ' is-selected' : '') +
+          '" data-storm-set="' + group + '" data-storm-value="' + value + '">' + label + '</button>';
+      }
+
+      function isStormStepDone(stepId) {
+        switch (stepId) {
+          case 'perimeter': return stormPerimeterMeters() != null;
+          case 'catchBasinCount': return numVal(stormState.catchBasinCount) != null && numVal(stormState.catchBasinCount) >= 0;
+          case 'catchBasinCore': return !!stormState.catchBasinCore;
+          default: return false;
+        }
+      }
+
+      function nextStormStepId() {
+        var order = ['perimeter', 'catchBasinCount', 'catchBasinCore'];
+        for (var i = 0; i < order.length; i++) {
+          if (!isStormStepDone(order[i])) return order[i];
+        }
+        return null;
+      }
+
+      function stormStepClass(stepId) {
+        if (!isStormStepDone(stepId)) {
+          return nextStormStepId() === stepId ? 'is-active' : 'is-pending';
+        }
+        return 'is-done';
+      }
+
+      function renderStormPerimeterStep() {
+        var cls = stormStepClass('perimeter');
+        var p = stormPerimeterMeters();
+        var html = '<div class="drain-wizard-step ' + cls + '" data-storm-step="perimeter">' +
+          '<p class="drain-wizard-q">Какой периметр?</p>';
+        if (p != null) html += '<p class="drain-wizard-ans">' + p + ' м</p>';
+        html += '<div class="drain-wizard-opts" style="margin-bottom:0.35rem">' +
+          stormOptBtn('perimeterMode', 'direct', 'Периметром', stormState.perimeterMode === 'direct') +
+          stormOptBtn('perimeterMode', 'dimensions', 'Длина × ширина', stormState.perimeterMode === 'dimensions') +
+          '</div>';
+        if (stormState.perimeterMode === 'direct') {
+          html += '<div class="drain-wizard-field">' +
+            '<label for="storm-perimeter">Периметр, м</label>' +
+            '<input type="number" id="storm-perimeter" min="0" step="0.1" placeholder="Например: 48" value="' +
+            (stormState.perimeterM || '') + '" data-storm-input="perimeterM" />' +
+            '</div>';
+        } else {
+          html += '<div class="drain-wizard-row-2">' +
+            '<div class="drain-wizard-field"><label for="storm-len">Длина, м</label>' +
+            '<input type="number" id="storm-len" min="0" step="0.1" value="' + (stormState.houseLengthM || '') +
+            '" data-storm-input="houseLengthM" /></div>' +
+            '<div class="drain-wizard-field"><label for="storm-wid">Ширина, м</label>' +
+            '<input type="number" id="storm-wid" min="0" step="0.1" value="' + (stormState.houseWidthM || '') +
+            '" data-storm-input="houseWidthM" /></div></div>' +
+            '<p class="drain-wizard-hint">Периметр считается: 2 × (длина + ширина). Метраж идёт в строку трубы ливнёвки.</p>';
+        }
+        html += '</div>';
+        return html;
+      }
+
+      function renderStormCatchBasinCountStep() {
+        if (stormPerimeterMeters() == null) return '';
+        var cls = stormStepClass('catchBasinCount');
+        var n = numVal(stormState.catchBasinCount);
+        var html = '<div class="drain-wizard-step ' + cls + '" data-storm-step="catchBasinCount">' +
+          '<p class="drain-wizard-q">Сколько дождеприемников?</p>';
+        if (n != null && n >= 0) html += '<p class="drain-wizard-ans">' + Math.floor(n) + ' шт.</p>';
+        html += '<div class="drain-wizard-field">' +
+          '<label for="storm-catch-basin-count">Количество, шт.</label>' +
+          '<input type="number" id="storm-catch-basin-count" min="0" step="1" placeholder="Например: 4" value="' +
+          (stormState.catchBasinCount !== '' ? stormState.catchBasinCount : '') + '" data-storm-input="catchBasinCount" />' +
+          '</div>' +
+          '<p class="drain-wizard-hint">При 1 и более — в смету добавляется строка «Дождеприемник 300×300» (4 500 ₽/шт.).</p>' +
+          '</div>';
+        return html;
+      }
+
+      function renderStormCatchBasinCoreStep() {
+        var basins = numVal(stormState.catchBasinCount);
+        if (stormPerimeterMeters() == null || basins == null || basins < 1) return '';
+        var cls = stormStepClass('catchBasinCore');
+        var ans = stormState.catchBasinCore ? APRON_LABELS.yesno[stormState.catchBasinCore] : '';
+        var html = '<div class="drain-wizard-step ' + cls + '" data-storm-step="catchBasinCore">' +
+          '<p class="drain-wizard-q">Демонтаж (прокол) под дождеприемник нужен?</p>';
+        if (ans) html += '<p class="drain-wizard-ans">' + ans + '</p>';
+        html += '<div class="drain-wizard-opts">' +
+          stormOptBtn('catchBasinCore', 'yes', 'Да', stormState.catchBasinCore === 'yes') +
+          stormOptBtn('catchBasinCore', 'no', 'Нет', stormState.catchBasinCore === 'no') +
+          '</div>' +
+          '<p class="drain-wizard-hint">Если «Да» — в смету добавится прокол, 2 500 ₽ × ' + Math.floor(basins) + ' шт.</p>' +
+          '</div>';
+        return html;
+      }
+
+      function renderStormWizard() {
+        if (!stormRoot) return;
+        var html = '<div class="drain-wizard">' +
+          renderStormPerimeterStep() +
+          renderStormCatchBasinCountStep() +
+          renderStormCatchBasinCoreStep() +
+          '<button type="button" class="drain-wizard-reset" id="storm-wizard-reset">Сбросить ливнёвку</button></div>';
+        stormRoot.innerHTML = html;
+        bindStormWizardEvents();
+        renderSmetaTable();
+      }
+
+      function bindStormWizardEvents() {
+        if (!stormRoot) return;
+        stormRoot.querySelectorAll('[data-storm-set]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activateSmetaSection('storm');
+            var group = btn.getAttribute('data-storm-set');
+            var val = btn.getAttribute('data-storm-value');
+            if (group === 'perimeterMode') stormState.perimeterMode = val;
+            else stormState[group] = val;
+            if (group === 'perimeterMode') stormState.catchBasinCore = null;
+            onStormConfigChanged();
+            renderStormWizard();
+          });
+        });
+        stormRoot.querySelectorAll('[data-storm-input]').forEach(function (inp) {
+          inp.addEventListener('input', function () {
+            activateSmetaSection('storm');
+            var field = inp.getAttribute('data-storm-input');
+            stormState[field] = inp.value;
+            if (field === 'perimeterM' || field === 'houseLengthM' || field === 'houseWidthM') {
+              stormState.catchBasinCore = null;
+            }
+            if (field === 'catchBasinCount') stormState.catchBasinCore = null;
+            stormRoot.querySelectorAll('.drain-wizard-step').forEach(function (el) {
+              var id = el.getAttribute('data-storm-step');
+              if (id) el.className = 'drain-wizard-step ' + stormStepClass(id);
+              if (id === 'perimeter') {
+                var pm = stormPerimeterMeters();
+                var pa = el.querySelector('.drain-wizard-ans');
+                if (pm != null) {
+                  if (!pa) {
+                    pa = document.createElement('p');
+                    pa.className = 'drain-wizard-ans';
+                    el.insertBefore(pa, el.querySelector('.drain-wizard-opts'));
+                  }
+                  pa.textContent = pm + ' м';
+                } else if (pa) pa.remove();
+              }
+              if (id === 'catchBasinCount') {
+                var nw = numVal(stormState.catchBasinCount);
+                var ia = el.querySelector('.drain-wizard-ans');
+                if (nw != null && nw >= 0) {
+                  if (!ia) {
+                    ia = document.createElement('p');
+                    ia.className = 'drain-wizard-ans';
+                    el.insertBefore(ia, el.querySelector('.drain-wizard-field'));
+                  }
+                  ia.textContent = Math.floor(nw) + ' шт.';
+                } else if (ia) ia.remove();
+              }
+            });
+            onStormConfigChanged();
+          });
+          inp.addEventListener('change', function () {
+            renderStormWizard();
+          });
+        });
+        var resetBtn = document.getElementById('storm-wizard-reset');
+        if (resetBtn) {
+          resetBtn.addEventListener('click', function () {
+            resetStormState();
+            onStormConfigChanged();
+            renderStormWizard();
+          });
+        }
+      }
+
+      restoreDopPortableState();
+      var resetAllBtn = document.getElementById('dop-reset-all-btn');
+      if (resetAllBtn) {
+        resetAllBtn.addEventListener('click', function () {
+          if (!confirm('Сбросить все данные? Дренаж, отмостка, ливнёвка и смета — с нуля.')) return;
+          resetAllDopConfigurator();
+        });
+      }
+      bindDrainExtrasPanel();
+      syncDrainExtrasInputs();
+      updateSmetaSectionChips();
+      applySmetaEditModeUi();
+      renderWizard();
+      renderApronWizard();
+      renderStormWizard();
+      refreshSmeta();
+    })();
+  </script>
+</body>
+</html>
